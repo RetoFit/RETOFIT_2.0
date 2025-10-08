@@ -1,0 +1,41 @@
+# Dependencias de Node.js
+/front/node_modules
+/front/.next
+/front/out
+/front/build
+
+# Archivos de entorno local de Next.js
+/front/.env.local
+/front/.env.development.local
+/front/.env.test.local
+/front/.env.production.local
+
+# Logs y archivos de debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# ----------------------------------------------------
+
+# Python
+# Entornos virtuales
+/services/*/venv
+/services/*/.venv
+/services/*/env
+/services/*/.env
+
+# Archivos de caché de Python
+/services/*/__pycache__/
+/services/*/*.pyc
+/services/*/*.pyo
+/services/*/*.pyd
+
+# Archivos de entorno de los servicios (si los subimos :D)
+
+# Carpetas de IDE
+.vscode/
+.idea/

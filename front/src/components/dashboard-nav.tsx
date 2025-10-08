@@ -1,0 +1,58 @@
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { cn } from '@/lib/utils';
+import {
+  LayoutDashboard,
+  Trophy,
+  UserCircle,
+  Footprints,
+  Dumbbell,
+  Timer,
+} from 'lucide-react';
+import {
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+} from '@/components/ui/sidebar';
+
+const navItems = [
+  {
+    href: '/dashboard',
+    label: 'Dashboard',
+    icon: LayoutDashboard,
+  },
+  {
+    href: '/dashboard/challenges',
+    label: 'Challenges',
+    icon: Trophy,
+  },
+  {
+    href: '/dashboard/profile',
+    label: 'Profile',
+    icon: UserCircle,
+  },
+];
+
+export function DashboardNav() {
+  const pathname = usePathname();
+
+  return (
+    <SidebarMenu>
+      {navItems.map((item) => (
+        <SidebarMenuItem key={item.href}>
+          <Link href={item.href}>
+            <SidebarMenuButton
+              isActive={pathname === item.href}
+              className="w-full"
+            >
+              <item.icon className="h-4 w-4" />
+              <span>{item.label}</span>
+            </SidebarMenuButton>
+          </Link>
+        </SidebarMenuItem>
+      ))}
+    </SidebarMenu>
+  );
+}
