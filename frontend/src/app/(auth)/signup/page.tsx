@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -13,14 +14,35 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/icons';
+import { registerUser } from '@/lib/api';
 
 export default function SignupPage() {
   const router = useRouter();
+  const [name, setName] = useState('');
+  const [last_name, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  
 
-  const handleSignup = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Mock signup logic
-    router.push('/dashboard');
+    setIsLoading(true);
+
+    try {
+      // 1. Usamos la función centralizada para hacer la llamada a la API
+      const data = await registerUser(name, last_name,email, password);
+      console.log('User registered:', data);
+      router.push('/login');
+    } catch (err: any) {
+      // El error que viene de la API ya está formateado
+      setError(err.message);
+      console.log('Error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+      
   };
 
   return (
@@ -39,7 +61,25 @@ export default function SignupPage() {
           <form onSubmit={handleSignup} className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="name">Name</Label>
-              <Input id="name" placeholder="Alex" required />
+              <Input 
+                id="name" 
+                placeholder="Nombre" 
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                disabled={isLoading}
+                required 
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="last_name">Name</Label>
+              <Input 
+                id="last_name" 
+                placeholder="Apellido" 
+                value={last_name}
+                onChange={(e) => setLastName(e.target.value)}
+                disabled={isLoading}
+                required 
+              />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
@@ -47,14 +87,24 @@ export default function SignupPage() {
                 id="email"
                 type="email"
                 placeholder="m@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
                 required
               />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" required />
+              <Input 
+                id="password" 
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)} 
+                disabled={isLoading}
+                required 
+              />
             </div>
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full" disabled={isLoading}>
               Create an account
             </Button>
             <Button variant="outline" className="w-full">

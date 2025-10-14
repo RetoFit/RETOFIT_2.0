@@ -52,6 +52,7 @@ async def verify_code_endpoint(request: EmailVerificationRequest, db: Session = 
 
 @router.post("/register")
 async def register_user(request: UserRegistrationRequest, db: Session = Depends(get_db)):
+    print('Llego mensaje')
     hashed_password = get_password_hash(request.password) if request.password else None
     user = User(
         nombre=request.name,
