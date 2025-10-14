@@ -1,8 +1,29 @@
 const AUTH_API = process.env.NEXT_PUBLIC_AUTH_API_URL;
 const USER_API = process.env.NEXT_PUBLIC_USER_API_URL;
 const GAMIFICATION_API = process.env.NEXT_PUBLIC_GAMIFICATION_API_URL;
+const POSTS_API = process.env.NEXT_PUBLIC_POSTS_API_URL;
 
 // --- Funciones para el Servicio de Autenticación ---
+
+export async function registerUser(email: string, password: string, name: string, lastName?: string) {
+  const response = await fetch(`${AUTH_API}/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ 
+      email, 
+      password, 
+      name, 
+      last_name: lastName || '',
+      provider: 'local'
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || 'Error al registrar usuario');
+  }
+  return response.json();
+}
 
 export async function loginUser(email, password) {
   const response = await fetch(`${AUTH_API}/login`, {
@@ -106,4 +127,78 @@ export async function uploadProfilePicture(formData) {
 
 export async function getAchievementsProgress(userId) {
   return fetchWithToken(`${GAMIFICATION_API}/users/${userId}/achievements-progress`);
+}
+
+// --- Funciones para el Servicio de Posts ---
+
+export async function getPosts(page = 1, limit = 10) {
+  return fetchWithToken(`${POSTS_API}/posts?page=${page}&limit=${limit}`);
+}
+
+export async function getPost(postId) {
+  return fetchWithToken(`${POSTS_API}/posts/${postId}`);
+}
+
+export async function createPost(content) {
+  return fetchWithToken(`${POSTS_API}/posts`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content }),
+  });
+}
+
+export async function uploadPostImage(postId, formData) {
+  const token = localStorage.getItem('accessToken');
+  const response = await fetch(`${POSTS_API}/posts/${postId}/upload`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}` },
+    body: formData,
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || 'Error al subir la imagen.');
+  }
+  return response.json();
+}
+
+export async function updatePost(postId, content) {
+  return fetchWithToken(`${POSTS_API}/posts/${postId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content }),
+  });
+}
+
+export async function deletePost(postId) {
+  return fetchWithToken(`${POSTS_API}/posts/${postId}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function getComments(postId) {
+  return fetchWithToken(`${POSTS_API}/posts/${postId}/comments`);
+}
+
+export async function createComment(postId, content) {
+  return fetchWithToken(`${POSTS_API}/posts/${postId}/comments`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content }),
+  });
+}
+
+export async function deleteComment(commentId) {
+  return fetchWithToken(`${POSTS_API}/comments/${commentId}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function toggleLike(postId) {
+  return fetchWithToken(`${POSTS_API}/posts/${postId}/like`, {
+    method: 'POST',
+  });
+}
+
+export async function getLikes(postId) {
+  return fetchWithToken(`${POSTS_API}/posts/${postId}/likes`);
 }
