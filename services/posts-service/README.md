@@ -27,13 +27,17 @@ Microservicio de publicaciones para RETOFIT. Maneja posts, comentarios y likes t
 # Instalar dependencias
 npm install
 
+# Configurar variables de entorno
+cp .env.example .env
+# O en Windows: Copy-Item .env.example .env
+
 # Generar cliente de Prisma
 npm run prisma:generate
 
 # IMPORTANTE: No ejecutar prisma db push (eliminará tablas existentes)
 # En su lugar, ejecutar el script SQL manualmente:
 # 1. Conectarse a PostgreSQL
-# 2. Ejecutar: psma/migrations/0001_create_posts_tables.sql
+# 2. Ejecutar: prisma/migrations/0001_create_posts_tables.sql
 
 # Modo desarrollo (con hot-reload)
 npm run dev
@@ -42,6 +46,31 @@ npm run dev
 npm run build
 npm start
 ```
+
+## 🔧 Configuración
+
+### Variables de Entorno
+
+El archivo `.env.example` contiene todas las credenciales necesarias:
+
+```bash
+# Copiar el archivo de ejemplo
+cp .env.example .env
+```
+
+**Nota:** El archivo `.env.example` ya tiene las credenciales de:
+- Base de datos PostgreSQL (AWS RDS)
+- JWT Secret (compartido con otros servicios)
+- Cloudinary (almacenamiento de imágenes en la nube)
+
+### Cloudinary
+
+Las imágenes se suben automáticamente a Cloudinary (no se almacenan localmente). Esto permite que:
+- ✅ Todos los desarrolladores vean las mismas imágenes
+- ✅ Las imágenes se optimicen automáticamente (webp, compresión)
+- ✅ URLs públicas HTTPS funcionan en producción
+
+Puedes ver las imágenes en: https://console.cloudinary.com/console/media_library
 
 ## Configurar Base de Datos
 
