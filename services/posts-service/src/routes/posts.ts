@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
 import { upload } from '../config/multer';
-import sharp from 'sharp';
+import { uploadToCloudinary, deleteFromCloudinary } from '../config/cloudinary';
 import fs from 'fs';
 import path from 'path';
 
@@ -37,7 +37,8 @@ router.get('/posts', authMiddleware, async (req: AuthRequest, res) => {
       likesCount: post.likes.length,
       commentsCount: post.comments.length,
       isLikedByUser: post.likes.some(like => like.userEmail === req.userEmail),
-      imageUrl: post.imageUrl ? `http://localhost:8005${post.imageUrl}` : null
+      // La URL ya viene completa de Cloudinary o es null
+      imageUrl: post.imageUrl
     }));
 
     const total = await prisma.post.count();
@@ -82,7 +83,7 @@ router.get('/posts/:id', authMiddleware, async (req: AuthRequest, res) => {
       likesCount: post.likes.length,
       commentsCount: post.comments.length,
       isLikedByUser: post.likes.some(like => like.userEmail === req.userEmail),
-      imageUrl: post.imageUrl ? `http://localhost:8005${post.imageUrl}` : null
+      imageUrl: post.imageUrl // URL completa de Cloudinary
     };
 
     res.json(formattedPost);
@@ -122,7 +123,7 @@ router.post('/posts', authMiddleware, async (req: AuthRequest, res) => {
   }
 });
 
-// Subir imagen a un post
+// Subir imagen a un post (ahora usando Cloudinary)
 router.post('/posts/:id/upload', authMiddleware, upload.single('image'), async (req: AuthRequest, res) => {
   try {
     const postId = parseInt(req.params.id);
@@ -137,7 +138,7 @@ router.post('/posts/:id/upload', authMiddleware, upload.single('image'), async (
     });
 
     if (!post) {
-      fs.unlinkSync(req.file.path); // Eliminar archivo si el post no existe
+      fs.unlinkSync(req.file.path); // Eliminar archivo temporal
       return res.status(404).json({ error: 'Post no encontrado' });
     }
 
@@ -146,34 +147,20 @@ router.post('/posts/:id/upload', authMiddleware, upload.single('image'), async (
       return res.status(403).json({ error: 'No tienes permiso para modificar este post' });
     }
 
-    // Optimizar imagen con sharp
-    const optimizedFilename = `optimized-${req.file.filename}`;
-    const optimizedPath = path.join('./uploads', optimizedFilename);
+    // Subir imagen a Cloudinary
+    // La función uploadToCloudinary optimiza y elimina el archivo temporal automáticamente
+    const cloudinaryUrl = await uploadToCloudinary(req.file.path);
 
-    await sharp(req.file.path)
-      .resize(1200, 1200, {
-        fit: 'inside',
-        withoutEnlargement: true
-      })
-      .jpeg({ quality: 85 })
-      .toFile(optimizedPath);
-
-    // Eliminar imagen original
-    fs.unlinkSync(req.file.path);
-
-    // Eliminar imagen anterior si existe
+    // Eliminar imagen anterior de Cloudinary si existe
     if (post.imageUrl) {
-      const oldImagePath = path.join('.', post.imageUrl);
-      if (fs.existsSync(oldImagePath)) {
-        fs.unlinkSync(oldImagePath);
-      }
+      await deleteFromCloudinary(post.imageUrl);
     }
 
-    // Actualizar post con nueva imagen
+    // Actualizar post con URL de Cloudinary
     const updatedPost = await prisma.post.update({
       where: { id: postId },
       data: {
-        imageUrl: `/uploads/${optimizedFilename}`
+        imageUrl: cloudinaryUrl // Guardar URL completa de Cloudinary
       },
       include: {
         comments: true,
@@ -185,8 +172,7 @@ router.post('/posts/:id/upload', authMiddleware, upload.single('image'), async (
       ...updatedPost,
       likesCount: updatedPost.likes.length,
       commentsCount: updatedPost.comments.length,
-      isLikedByUser: updatedPost.likes.some(like => like.userEmail === req.userEmail),
-      imageUrl: `http://localhost:8005${updatedPost.imageUrl}`
+      isLikedByUser: updatedPost.likes.some(like => like.userEmail === req.userEmail)
     });
   } catch (error: any) {
     if (req.file && fs.existsSync(req.file.path)) {
@@ -228,7 +214,7 @@ router.put('/posts/:id', authMiddleware, async (req: AuthRequest, res) => {
       likesCount: updatedPost.likes.length,
       commentsCount: updatedPost.comments.length,
       isLikedByUser: updatedPost.likes.some(like => like.userEmail === req.userEmail),
-      imageUrl: updatedPost.imageUrl ? `http://localhost:8005${updatedPost.imageUrl}` : null
+      imageUrl: updatedPost.imageUrl ? `${process.env.API_BASE_URL || 'http://localhost:8005'}${updatedPost.imageUrl}` : null
     });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
