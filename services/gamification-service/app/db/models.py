@@ -1,54 +1,52 @@
-# app/db/models.py
-
-from sqlalchemy import Column, Integer, String, DateTime, Float, ForeignKey
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
-from .session import Base
-from pydantic import BaseModel
-from typing import List, Optional
+from pydantic import BaseModel, Field
+from pydantic.json_schema import GetJsonSchemaHandler
+from pydantic_core import core_schema, CoreSchema
+from typing import List, Optional, Any
 from datetime import datetime
+from bson import ObjectId
 
-# Modelos mínimos para mantener las relaciones y poder hacer consultas
-class User(Base):
-    __tablename__ = 'usuario'
-    id_usuario = Column(Integer, primary_key=True)
-    nombre = Column(String)
-    puntos = relationship("Puntos", back_populates="propietario")
-    logros = relationship("Logro", back_populates="propietario")
-    actividades = relationship("Actividad", back_populates="propietario")
+# Clase actualizada y robusta para manejar ObjectId con Pydantic v2
+class PyObjectId(ObjectId):
+    @classmethod
+    def __get_pydantic_core_schema__(
+        cls, source_type: Any, handler: Any
+    ) -> CoreSchema:
+        """
+        Define el esquema de validación para Pydantic.
+        Permite que el campo acepte un ObjectId directamente o un string que sea un ObjectId válido.
+        """
+        # Validador que acepta un ObjectId directamente
+        instance_schema = core_schema.is_instance_schema(ObjectId)
 
-class Actividad(Base):
-    __tablename__ = 'actividades'
-    id_actividad = Column(Integer, primary_key=True)
-    distancia_km = Column(Float, nullable=True)
-    id_usuario = Column(Integer, ForeignKey('usuario.id_usuario'), nullable=False)
-    propietario = relationship("User", back_populates="actividades")
+        # Validador que convierte un string a ObjectId
+        str_schema = core_schema.chain_schema(
+            [
+                core_schema.str_schema(),
+                core_schema.no_info_plain_validator_function(cls.validate),
+            ]
+        )
 
-# Modelos principales de este servicio
-class Puntos(Base):
-    __tablename__ = 'puntos'
-    id_puntos = Column(Integer, primary_key=True)
-    cantidad = Column(Integer, nullable=False)
-    fecha_obtencion = Column(DateTime(timezone=True), server_default=func.now())
-    id_usuario = Column(Integer, ForeignKey('usuario.id_usuario'), nullable=False)
-    propietario = relationship("User", back_populates="puntos")
+        return core_schema.json_or_python_schema(
+            json_schema=str_schema,
+            python_schema=core_schema.union_schema([instance_schema, str_schema]),
+            serialization=core_schema.plain_serializer_function_ser_schema(str),
+        )
 
-class Logro(Base):
-    __tablename__ = 'logros'
-    id_logro = Column(Integer, primary_key=True)
-    nombre = Column(String, nullable=False)
-    descripcion = Column(String, nullable=True)
-    fecha_obtencion = Column(DateTime(timezone=True), server_default=func.now())
-    id_usuario = Column(Integer, ForeignKey('usuario.id_usuario'), nullable=False)
-    propietario = relationship("User", back_populates="logros")
+    @classmethod
+    def validate(cls, v: Any) -> ObjectId:
+        """Valida que el valor es un ObjectId válido."""
+        if isinstance(v, ObjectId):
+            return v
+        if ObjectId.is_valid(v):
+            return ObjectId(v)
+        raise ValueError("Invalid ObjectId")
 
-class LogroDefinicion(Base):
-    __tablename__ = 'logros_definiciones'
-    id_definicion = Column(Integer, primary_key=True)
-    nombre = Column(String, unique=True, nullable=False)
-    descripcion = Column(String, nullable=False)
-    regla_tipo = Column(String, nullable=False)
-    regla_valor = Column(Float, nullable=False)
+    @classmethod
+    def __get_pydantic_json_schema__(
+        cls, core_schema: CoreSchema, handler: GetJsonSchemaHandler
+    ):
+        # Simplemente representamos el ObjectId como un string en el esquema JSON
+        return {"type": "string"}
 
 # --- Schemas de Pydantic ---
 
@@ -65,7 +63,7 @@ class LogroResponse(BaseModel):
         from_attributes = True
 
 class AchievementProgressResponse(BaseModel):
-    id: int
+    id: PyObjectId = Field(alias="_id")
     nombre: str
     descripcion: str
     meta: float
@@ -74,3 +72,9 @@ class AchievementProgressResponse(BaseModel):
     obtenido: bool
     fecha_obtenido: Optional[datetime]
     tipo_regla: str
+    
+    class Config:
+        populate_by_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {ObjectId: str}
+

@@ -39,7 +39,7 @@ interface UserData {
 }
 
 interface ChallengeData {
-  id: number;
+  id: string;
   nombre: string;
   meta: number;
   progreso_actual: number;

@@ -6,3 +6,4 @@ python-dotenv
 python-jose[cryptography]
 passlib[bcrypt] # Necesario para la seguridad del token
 python-multipart
+PyJWT

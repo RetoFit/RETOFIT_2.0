@@ -1,13 +1,17 @@
-# app/main.py
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.endpoints import router as gamification_router
-from app.db.session import engine, Base
-
-Base.metadata.create_all(bind=engine)
+from app.db.session import connect_to_mongo, close_mongo_connection
 
 app = FastAPI(title="Gamification Service")
+
+@app.on_event("startup")
+async def startup_event():
+    await connect_to_mongo()
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    await close_mongo_connection()
 
 app.add_middleware(
     CORSMiddleware,
