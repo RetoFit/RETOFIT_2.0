@@ -10,6 +10,7 @@ import {
   Footprints,
   Dumbbell,
   Timer,
+  MessageSquare,
 } from 'lucide-react';
 import {
   SidebarMenu,
@@ -22,6 +23,11 @@ const navItems = [
     href: '/dashboard',
     label: 'Dashboard',
     icon: LayoutDashboard,
+  },
+  {
+    href: '/dashboard/feed',
+    label: 'Feed',
+    icon: MessageSquare,
   },
   {
     href: '/dashboard/challenges',

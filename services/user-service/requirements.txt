@@ -4,5 +4,6 @@ sqlalchemy
 psycopg2-binary
 python-dotenv
 python-jose[cryptography]
+PyJWT
 passlib[bcrypt] # Necesario para la seguridad del token
 python-multipart
