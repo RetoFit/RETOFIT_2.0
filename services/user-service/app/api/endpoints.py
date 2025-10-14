@@ -79,27 +79,3 @@ async def upload_profile_picture(
     db.commit()
 
     return {"status": "success", "file_url": file_url}
-
-
-@router.get("/profile/{user_id}", response_model=UserProfileResponse)
-async def get_user_profile_by_id(user_id: int, db: Session = Depends(get_db)):
-    """
-    Obtiene el perfil público de un usuario por su ID.
-    """
-    user = db.query(User).filter(User.id_usuario == user_id).first()
-    if user is None:
-        raise HTTPException(status_code=404, detail="Usuario no encontrado")
-    
-    return UserProfileResponse(
-        id=user.id_usuario,
-        username=user.nombre,
-        lastname=user.apellido,
-        email=user.correo,
-        age=user.edad,
-        weight=user.peso,
-        height=user.altura,
-        gender=user.genero,
-        fitness_level=user.nivel_condicion_fisica,
-        foto_perfil_url=user.foto_perfil_url,
-        deportes_favoritos=user.deportes_favoritos
-    )
