@@ -2,30 +2,11 @@ const AUTH_API = process.env.NEXT_PUBLIC_AUTH_API_URL;
 const USER_API = process.env.NEXT_PUBLIC_USER_API_URL;
 const GAMIFICATION_API = process.env.NEXT_PUBLIC_GAMIFICATION_API_URL;
 const POSTS_API = process.env.NEXT_PUBLIC_POSTS_API_URL;
+const ADMIN_API = process.env.NEXT_PUBLIC_ADMIN_API_URL;
 
 // --- Funciones para el Servicio de Autenticación ---
 
-export async function registerUser(email: string, password: string, name: string, lastName?: string) {
-  const response = await fetch(`${AUTH_API}/register`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ 
-      email, 
-      password, 
-      name, 
-      last_name: lastName || '',
-      provider: 'local'
-    }),
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.detail || 'Error al registrar usuario');
-  }
-  return response.json();
-}
-
-export async function loginUser(email, password) {
+export async function loginUser(email: string, password: string) {
   const response = await fetch(`${AUTH_API}/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -39,16 +20,54 @@ export async function loginUser(email, password) {
   return response.json(); // Devuelve { access_token, token_type }
 }
 
+export async function registerUser(userData: { name: string, last_name?: string, email: string, password?: string, provider?: string }) {
+  const response = await fetch(`${AUTH_API}/register`, {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(userData),
+  });
+
+  if (!response.ok) {
+      const errorData = await response.json();
+      // El backend puede devolver errores en un array o como un objeto
+      if (Array.isArray(errorData.detail)) {
+          throw new Error(errorData.detail.map((e: any) => e.msg).join(', '));
+      }
+      throw new Error(errorData.detail || 'Error al registrar el usuario');
+  }
+  return response.json(); // Devuelve { status, message, user_id }
+}
+
+export async function socialLogin(userData: { name: string, email: string, provider: string, provider_id: string}) {
+  const response = await fetch(`${AUTH_API}/social-login`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(userData),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || 'Error en el inicio de sesión social');
+  }
+
+  return response.json(); // Devuelve { access_token, token_type }
+}
+
+
 // --- Funciones para el Servicio de Usuarios ---
 
 // Función genérica para hacer fetch con token
-async function fetchWithToken(url, options = {}) {
+async function fetchWithToken(url: string, options: RequestInit = {}) {
   const token = localStorage.getItem('accessToken');
   if (!token) {
     throw new Error('No se encontró token de acceso. Por favor, inicie sesión.');
   }
 
-  const headers = {
+  const headers: HeadersInit = {
     'Authorization': `Bearer ${token}`,
     ...options.headers,
   };
@@ -75,7 +94,7 @@ export async function getCurrentUser() {
   return fetchWithToken(`${USER_API}/me`);
 }
 
-export async function updateUserProfile(profileData) {
+export async function updateUserProfile(profileData: { name?: string, last_name?: string }) {
     return fetchWithToken(`${USER_API}/me`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -83,7 +102,7 @@ export async function updateUserProfile(profileData) {
     });
 }
 
-export async function uploadProfilePicture(formData) {
+export async function uploadProfilePicture(formData: FormData) {
     // Para FormData no se establece Content-Type, el navegador lo hace solo
     const token = localStorage.getItem('accessToken');
     const response = await fetch(`${USER_API}/upload-profile-picture`, {
@@ -98,24 +117,59 @@ export async function uploadProfilePicture(formData) {
     return response.json();
 }
 
+// --- Funciones para el Servicio de Admin (PHP) ---
+
+// Función genérica para hacer fetch con el token de ADMIN
+async function fetchWithAdminToken(url: string, options: RequestInit = {}) {
+  const token = localStorage.getItem('admin_token');
+  if (!token) {
+    window.location.href = '/admin/login';
+    throw new Error('No se encontró token de administrador. Por favor, inicie sesión.');
+  }
+
+  const headers: HeadersInit = {
+    'Authorization': `Bearer ${token}`,
+    ...options.headers,
+  };
+
+  const response = await fetch(url, { ...options, headers });
+
+  if (response.status === 401) {
+    localStorage.removeItem('admin_token');
+    window.location.href = '/admin/login'; // Redirigir al login de admin
+    throw new Error('Sesión de administrador expirada.');
+  }
+
+  if (!response.ok) {
+    // Intenta leer el cuerpo del error para dar un mensaje más específico
+    try {
+      const errorData = await response.json();
+      throw new Error(errorData.error || errorData.message || 'Error en la solicitud al servicio de admin.');
+    } catch (e) {
+      throw new Error(`Error en el servicio de admin: ${response.statusText} (Status: ${response.status})`);
+    }
+  }
+
+  return response.json();
+}
 
 // --- Funciones para el Servicio de Gamificación ---
 
-export async function getAchievementsProgress(userId) {
+export async function getAchievementsProgress(userId: number) {
   return fetchWithToken(`${GAMIFICATION_API}/users/${userId}/achievements-progress`);
 }
 
-// --- Funciones para el Servicio de Posts ---
+// --- Functions for the Posts Service ---
 
 export async function getPosts(page = 1, limit = 10) {
   return fetchWithToken(`${POSTS_API}/posts?page=${page}&limit=${limit}`);
 }
 
-export async function getPost(postId) {
+export async function getPost(postId: number) {
   return fetchWithToken(`${POSTS_API}/posts/${postId}`);
 }
 
-export async function createPost(content) {
+export async function createPost(content: string) {
   return fetchWithToken(`${POSTS_API}/posts`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -123,7 +177,7 @@ export async function createPost(content) {
   });
 }
 
-export async function uploadPostImage(postId, formData) {
+export async function uploadPostImage(postId: number, formData: FormData) {
   const token = localStorage.getItem('accessToken');
   const response = await fetch(`${POSTS_API}/posts/${postId}/upload`, {
     method: 'POST',
@@ -137,7 +191,7 @@ export async function uploadPostImage(postId, formData) {
   return response.json();
 }
 
-export async function updatePost(postId, content) {
+export async function updatePost(postId: number, content: string) {
   return fetchWithToken(`${POSTS_API}/posts/${postId}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
@@ -145,17 +199,17 @@ export async function updatePost(postId, content) {
   });
 }
 
-export async function deletePost(postId) {
+export async function deletePost(postId: number) {
   return fetchWithToken(`${POSTS_API}/posts/${postId}`, {
     method: 'DELETE',
   });
 }
 
-export async function getComments(postId) {
+export async function getComments(postId: number) {
   return fetchWithToken(`${POSTS_API}/posts/${postId}/comments`);
 }
 
-export async function createComment(postId, content) {
+export async function createComment(postId: number, content: string) {
   return fetchWithToken(`${POSTS_API}/posts/${postId}/comments`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -163,18 +217,60 @@ export async function createComment(postId, content) {
   });
 }
 
-export async function deleteComment(commentId) {
+export async function deleteComment(commentId: number) {
   return fetchWithToken(`${POSTS_API}/comments/${commentId}`, {
     method: 'DELETE',
   });
 }
 
-export async function toggleLike(postId) {
+export async function toggleLike(postId: number) {
   return fetchWithToken(`${POSTS_API}/posts/${postId}/like`, {
     method: 'POST',
   });
 }
 
-export async function getLikes(postId) {
+export async function getLikes(postId: number) {
   return fetchWithToken(`${POSTS_API}/posts/${postId}/likes`);
+}
+
+
+
+
+/**
+ * Obtiene las estadísticas y la lista de usuarios desde el microservicio de admin.
+ * Requiere un token de admin válido.
+ */
+export async function getAdminUsersData() {
+  return fetchWithAdminToken(`${ADMIN_API}/users`);
+}
+
+/**
+ * Crea un nuevo usuario desde el panel de admin.
+ */
+export async function createAdminUser(userData: { name: string, email: string, password?: string }) {
+  return fetchWithAdminToken(`${ADMIN_API}/users`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(userData),
+  });
+}
+
+/**
+ * Actualiza el estado de un usuario (active/suspended).
+ */
+export async function updateUserStatus(userId: number, status: 'active' | 'suspended') {
+  return fetchWithAdminToken(`${ADMIN_API}/users/${userId}/status`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status }),
+  });
+}
+
+/**
+ * Elimina un usuario desde el panel de admin.
+ */
+export async function deleteAdminUser(userId: number) {
+  return fetchWithAdminToken(`${ADMIN_API}/users/${userId}`, {
+    method: 'DELETE',
+  });
 }
