@@ -17,9 +17,7 @@ async def send_email_async(to: str, subject: str, html_body: str):
     Envía un correo electrónico de forma asíncrona usando smtplib.
     """
     if not all([MAIL_SERVER, MAIL_PORT, MAIL_USERNAME, MAIL_PASSWORD, MAIL_FROM]):
-        # En un entorno de producción, esto debería ser logueado, no impreso.
         print("Advertencia: Faltan variables de entorno para la configuración del correo. El correo no será enviado.")
-        # No lanzar una excepción para permitir que el registro funcione en desarrollo sin configurar email.
         return
 
     message = MIMEMultipart("alternative")
@@ -33,6 +31,6 @@ async def send_email_async(to: str, subject: str, html_body: str):
 
     # Usar with para asegurar que la conexión se cierre automáticamente
     with smtplib.SMTP(MAIL_SERVER, MAIL_PORT) as server:
-        server.starttls()  # Inicia la conexión segura
+        server.starttls() 
         server.login(MAIL_USERNAME, MAIL_PASSWORD)
         server.sendmail(MAIL_FROM, to, message.as_string())
