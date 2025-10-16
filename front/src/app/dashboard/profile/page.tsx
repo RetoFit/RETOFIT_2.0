@@ -322,7 +322,7 @@ export default function ProfilePage() {
   );
 }
 
-function renderInfo(label: string, value: string | number | null, className?: string) {
+function renderInfo(label: string, value: string | number | null | undefined, className?: string) {
     if (value === null || value === undefined || value === '') return null;
     return (
         <div className={className}>

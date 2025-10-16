@@ -15,9 +15,11 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Logo } from '@/components/icons';
+import { Logo } from '@/components/icons'; 
 import { Loader2 } from 'lucide-react';
-import { loginUser } from '@/lib/api'; // Importamos la función centralizada
+import { loginUser, socialLogin } from '@/lib/api';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -25,6 +27,10 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
+  const [forgotPasswordError, setForgotPasswordError] = useState('');
+  const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState('');
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -48,6 +54,69 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
+
+  const handleForgotPassword = async () => {
+    setForgotPasswordError('');
+    setForgotPasswordSuccess('');
+    setIsLoading(true);
+
+    if (!forgotPasswordEmail) {
+      setForgotPasswordError('Por favor, ingresa tu correo electrónico.');
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_AUTH_API_URL}/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: forgotPasswordEmail }),
+      });
+
+      // Por seguridad, no revelamos si el correo existe.
+      // El backend debería manejar el error 401 sin enviarlo al front.
+      // Asumimos que la petición se procesó.
+      setForgotPasswordSuccess('Si existe una cuenta, recibirás un enlace para restablecer tu contraseña.');
+      setForgotPasswordEmail('');
+      setTimeout(() => setShowForgotPasswordModal(false), 3000);
+
+    } catch (err: any) {
+      // Este error es para problemas de red, no para "usuario no encontrado"
+      setForgotPasswordError(err.message || 'Ocurrió un error al enviar la solicitud.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setIsLoading(true);
+    setError('');
+    try {
+      // 1. Iniciar sesión con el popup de Google
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      // 2. Enviar los datos al backend para registrar/loguear usando la función centralizada
+      const [firstName, ...lastNameParts] = user.displayName?.split(' ') || ["", ""];
+      const apiResponse = await socialLogin({
+        name: firstName,
+        email: user.email!,
+        provider: 'google',
+        provider_id: user.uid, // <-- AÑADE ESTA LÍNEA
+      });
+
+      // 3. Guardar el token de nuestro backend y redirigir
+      localStorage.setItem('accessToken', apiResponse.access_token);
+      router.push('/dashboard');
+
+    } catch (err: any) {
+      setError(err.message || 'Ocurrió un error durante el inicio de sesión con Google.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
 
   return (
     <div className="flex h-full items-center justify-center p-4">
@@ -78,12 +147,13 @@ export default function LoginPage() {
             <div className="grid gap-2">
               <div className="flex items-center">
                 <Label htmlFor="password">Contraseña</Label>
-                <Link
-                  href="#"
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPasswordModal(true)}
                   className="ml-auto inline-block text-sm underline"
                 >
                   ¿Olvidaste tu contraseña?
-                </Link>
+                </button>
               </div>
               <Input
                 id="password"
@@ -99,7 +169,7 @@ export default function LoginPage() {
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Iniciar Sesión
             </Button>
-            <Button variant="outline" className="w-full" disabled={isLoading}>
+            <Button variant="outline" className="w-full" onClick={handleGoogleLogin} disabled={isLoading}>
               Iniciar con Google
             </Button>
           </form>
@@ -111,6 +181,43 @@ export default function LoginPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Modal para Olvidé mi Contraseña */}
+      {showForgotPasswordModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle>Restablecer Contraseña</CardTitle>
+              <CardDescription>
+                Ingresa el correo electrónico asociado a tu cuenta.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="forgot-email">Correo electrónico</Label>
+                <Input
+                  id="forgot-email"
+                  type="email"
+                  placeholder="m@example.com"
+                  value={forgotPasswordEmail}
+                  onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                  required
+                />
+              </div>
+              {forgotPasswordError && <p className="text-sm text-red-500">{forgotPasswordError}</p>}
+              {forgotPasswordSuccess && <p className="text-sm text-green-500">{forgotPasswordSuccess}</p>}
+              <div className="flex gap-2">
+                <Button variant="outline" className="w-full" onClick={() => setShowForgotPasswordModal(false)}>
+                  Cancelar
+                </Button>
+                <Button className="w-full" onClick={handleForgotPassword} disabled={isLoading}>
+                  {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Enviar Enlace'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
