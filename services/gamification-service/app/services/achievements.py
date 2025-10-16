@@ -1,40 +1,43 @@
-# app/services/achievements.py
+# services/gamification-service/app/services/achievements.py
+from motor.motor_asyncio import AsyncIOMotorDatabase
+from datetime import datetime
 
-from sqlalchemy.orm import Session
-from sqlalchemy import func
-from app.db.models import Actividad, Logro, LogroDefinicion
-
-def check_and_award_achievements(db: Session, user_id: int):
+async def check_and_award_achievements(db: AsyncIOMotorDatabase, user_id: int):
     """
     Verifica y otorga logros a un usuario basado en su progreso total.
     """
-    definitions = db.query(LogroDefinicion).all()
-    user_achievements = db.query(Logro).filter(Logro.id_usuario == user_id).all()
-    achieved_names = {logro.nombre for logro in user_achievements}
+    definitions_cursor = db["logros_definiciones"].find()
+    definitions = await definitions_cursor.to_list(length=100)
+    
+    user_achievements_cursor = db["logros"].find({"id_usuario": user_id})
+    user_achievements = await user_achievements_cursor.to_list(length=100)
+    achieved_names = {logro["nombre"] for logro in user_achievements}
 
     for definition in definitions:
-        if definition.nombre in achieved_names:
+        if definition["nombre"] in achieved_names:
             continue
 
         achievement_earned = False
         
-        if definition.regla_tipo == "SUMA_DISTANCIA":
-            total_distance = db.query(func.sum(Actividad.distancia_km)).filter(Actividad.id_usuario == user_id).scalar() or 0
-            if total_distance >= definition.regla_valor:
+        if definition["regla_tipo"] == "SUMA_DISTANCIA":
+            pipeline = [
+                {"$match": {"id_usuario": user_id}},
+                {"$group": {"_id": "$id_usuario", "total": {"$sum": "$distancia_km"}}}
+            ]
+            result = await db["actividades"].aggregate(pipeline).to_list(length=1)
+            total_distance = result[0]["total"] if result else 0
+            if total_distance >= definition["regla_valor"]:
                 achievement_earned = True
 
-        elif definition.regla_tipo == "CONTEO_ACTIVIDADES":
-            total_activities = db.query(func.count(Actividad.id_actividad)).filter(Actividad.id_usuario == user_id).scalar() or 0
-            if total_activities >= definition.regla_valor:
+        elif definition["regla_tipo"] == "CONTEO_ACTIVIDADES":
+            total_activities = await db["actividades"].count_documents({"id_usuario": user_id})
+            if total_activities >= definition["regla_valor"]:
                 achievement_earned = True
         
         if achievement_earned:
-            new_logro = Logro(
-                nombre=definition.nombre,
-                descripcion=definition.descripcion,
-                id_usuario=user_id
-            )
-            db.add(new_logro)
-            # Aquí se podría emitir un evento para notificar al usuario (e.g., push notification)
-
-    db.commit()
+            await db["logros"].insert_one({
+                "nombre": definition["nombre"],
+                "descripcion": definition["descripcion"],
+                "id_usuario": user_id,
+                "fecha_obtencion": datetime.utcnow()
+            })

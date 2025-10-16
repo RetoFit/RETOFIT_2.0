@@ -8,3 +8,4 @@ bcrypt
 fastapi-mail
 python-jose[cryptography]
 PyJWT
+httpx
