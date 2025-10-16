@@ -428,35 +428,37 @@ export default function SignupPage() {
           <Card className="w-full max-w-2xl max-h-[80vh] overflow-y-auto">
             <CardHeader>
               <CardTitle>Términos y condiciones</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-4">
-              <div className="text-sm text-muted-foreground space-y-4">
-                <p>
-                  Fitness Frontier es una plataforma diseñada para generar rutas de aprendizaje 
-                  personalizadas a partir de documentos cargados por los usuarios, quienes son 
-                  totalmente responsables del contenido que suben y de su uso, debiendo cumplir 
-                  con todas las leyes y regulaciones aplicables.
-                </p>
-                <p>
-                  Fitness Frontier en ningún caso se hace responsable del uso indebido de la 
-                  plataforma, incluyendo, pero no limitado a, la generación, difusión o acceso 
-                  a información que incite o facilite actividades ilegales, peligrosas o que 
-                  atenten contra la seguridad pública.
-                </p>
-                <p>
-                  La plataforma y sus contenidos son propiedad de Fitness Frontier, y su uso 
-                  indebido está prohibido. Fitness Frontier no se hace responsable por daños 
-                  indirectos derivados del uso de la plataforma.
-                </p>
-                <p>
-                  Fitness Frontier puede modificar los servicios o los términos en cualquier 
-                  momento, notificando a los usuarios registrados.
-                </p>
-              </div>
-              <Button onClick={() => setShowTermsModal(false)}>
-                Cerrar
-              </Button>
-            </CardContent>
+                      </CardHeader>
+                      <CardContent className="grid gap-4">
+            <div className="text-sm text-muted-foreground space-y-4">
+              <p>
+                Fitness Frontier es una plataforma enfocada en el bienestar y la superación personal, 
+                donde los usuarios pueden participar en retos, registrar su progreso y compartir logros 
+                relacionados con la actividad física y hábitos saludables.
+              </p>
+              <p>
+                Cada usuario es responsable del contenido que publica, así como de su participación en 
+                los retos. Fitness Frontier no se hace responsable de lesiones, daños o perjuicios que 
+                puedan derivarse del uso inadecuado de la aplicación o de la realización de actividades 
+                físicas sin la debida precaución o supervisión profesional.
+              </p>
+              <p>
+                Fitness Frontier está diseñada para motivar y acompañar el progreso personal, no para 
+                sustituir asesorías médicas o entrenamientos profesionales. Se recomienda a los usuarios 
+                consultar con un especialista antes de iniciar cualquier programa de ejercicio.
+              </p>
+              <p>
+                La plataforma y sus contenidos son propiedad de Fitness Frontier. Cualquier uso no 
+                autorizado, copia o distribución de los materiales está estrictamente prohibido. 
+                Fitness Frontier se reserva el derecho de modificar los servicios o los términos 
+                de uso en cualquier momento, notificando a los usuarios registrados.
+              </p>
+            </div>
+            <Button onClick={() => setShowTermsModal(false)}>
+              Cerrar
+            </Button>
+          </CardContent>
+
           </Card>
         </div>
       )}
