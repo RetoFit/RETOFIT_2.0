@@ -1,10 +1,21 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { getAdminUsersData, updateUserStatus, deleteAdminUser, createAdminUser } from '@/lib/api';
+import { getAdminUsersData, updateUserStatus, deleteAdminUser, createAdminUser } from '@/lib/admin-api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Label } from '@/components/ui/label';
 
 // Tipos para los datos que esperamos de la API
@@ -46,6 +57,7 @@ export default function AdminUsersPanel() {
   const [data, setData] = useState<AdminUserData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [isCreateUserOpen, setCreateUserOpen] = useState(false);
 
   useEffect(() => {
@@ -78,8 +90,6 @@ export default function AdminUsersPanel() {
   };
 
   const handleStatusChange = async (userId: number, newStatus: 'active' | 'suspended') => {
-    if (!confirm(`¿Estás seguro de que quieres ${newStatus === 'active' ? 'reactivar' : 'suspender'} a este usuario?`)) return;
-
     try {
       await updateUserStatus(userId, newStatus);
       // Actualizar el estado localmente para reflejar el cambio instantáneamente
@@ -98,23 +108,23 @@ export default function AdminUsersPanel() {
         return { ...prevData, users: updatedUsers, stats: { ...prevData.stats, active_users, suspended_users } };
       });
     } catch (err: any) {
-      alert(`Error al cambiar el estado: ${err.message}`);
+      setActionError(`Error al cambiar el estado: ${err.message}`);
     }
   };
 
   const handleDeleteUser = async (userId: number, userName: string) => {
-    if (!confirm(`¿Estás seguro de que quieres ELIMINAR a ${userName}? Esta acción es irreversible.`)) return;
-
     try {
       await deleteAdminUser(userId);
       // Actualizar el estado localmente
       setData(prevData => {
         if (!prevData) return null;
         const updatedUsers = prevData.users.filter(user => user.id !== userId);
-        return { ...prevData, users: updatedUsers, stats: { ...prevData.stats, total_users: prevData.stats.total_users - 1 } };
+        const active_users = updatedUsers.filter(u => u.status === 'active').length;
+        const suspended_users = updatedUsers.filter(u => u.status === 'suspended').length;
+        return { ...prevData, users: updatedUsers, stats: { ...prevData.stats, total_users: prevData.stats.total_users - 1, active_users, suspended_users } };
       });
     } catch (err: any) {
-      alert(`Error al eliminar el usuario: ${err.message}`);
+      setActionError(`Error al eliminar el usuario: ${err.message}`);
     }
   };
 
@@ -128,7 +138,7 @@ export default function AdminUsersPanel() {
       setCreateUserOpen(false); // Cierra el modal
       refetchData(); // Recarga todos los datos para ver el nuevo usuario
     } catch (err: any) {
-      alert(`Error al crear usuario: ${err.message}`);
+      setActionError(`Error al crear usuario: ${err.message}`);
     }
   };
 
@@ -149,6 +159,8 @@ export default function AdminUsersPanel() {
         <StatCard title="Usuarios Activos" value={data.stats.active_users} />
         <StatCard title="Usuarios Suspendidos" value={data.stats.suspended_users} />
       </div>
+
+      {actionError && <p className="text-red-500 mb-4">{actionError}</p>}
 
       {/* Tabla de Usuarios */}
       <div className="overflow-x-auto">
@@ -172,9 +184,41 @@ export default function AdminUsersPanel() {
                   </span>
                 </td>
                 <td className="py-2 px-4 space-x-2">
-                  {user.status === 'active' && <Button onClick={() => handleStatusChange(user.id, 'suspended')} variant="outline" size="sm" className="border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black">Suspender</Button>}
-                  {user.status === 'suspended' && <Button onClick={() => handleStatusChange(user.id, 'active')} variant="outline" size="sm" className="border-green-500 text-green-500 hover:bg-green-500 hover:text-black">Reactivar</Button>}
-                  <Button onClick={() => handleDeleteUser(user.id, user.name)} variant="destructive" size="sm">Eliminar</Button>
+                  {user.status === 'active' && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild><Button variant="outline" size="sm" className="border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black">Suspender</Button></AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader><AlertDialogTitle>¿Seguro que quieres suspender a {user.name}?</AlertDialogTitle></AlertDialogHeader>
+                        <AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => handleStatusChange(user.id, 'suspended')}>Suspender</AlertDialogAction></AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                  {user.status === 'suspended' && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild><Button variant="outline" size="sm" className="border-green-500 text-green-500 hover:bg-green-500 hover:text-black">Reactivar</Button></AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader><AlertDialogTitle>¿Seguro que quieres reactivar a {user.name}?</AlertDialogTitle></AlertDialogHeader>
+                        <AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => handleStatusChange(user.id, 'active')}>Reactivar</AlertDialogAction></AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" size="sm">Eliminar</Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Esta acción es irreversible y eliminará permanentemente al usuario <span className="font-bold">{user.name}</span>.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleDeleteUser(user.id, user.name)}>Eliminar Usuario</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </td>
               </tr>
             ))}
