@@ -4,29 +4,35 @@ namespace App\Routes;
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
-use Slim\App;
+use Slim\Interfaces\RouteCollectorProxyInterface;
 use PDO;
 
 class UserRoutes
 {
-    public function register(App $app, PDO $pdo)
+    public function register(RouteCollectorProxyInterface $group, PDO $pdo)
     {
         // Obtener todos los usuarios y estadísticas
-        $app->get('/admin/users', function (Request $request, Response $response, $args) use ($pdo) {
+        $group->get('/users', function (Request $request, Response $response, $args) use ($pdo) {
             try {
-                $stmt = $pdo->query('SELECT id_usuario, nombre, correo, rol FROM usuario ORDER BY id_usuario DESC');
+                // 1. Obtener la lista de usuarios (con paginación en el futuro)
+                $stmt = $pdo->query('SELECT id_usuario, nombre, correo, rol FROM usuario ORDER BY id_usuario DESC LIMIT 100'); // Limite para seguridad
                 $users = $stmt->fetchAll();
+
+                // 2. Obtener estadísticas directamente desde la base de datos (¡Mucho más rápido!)
+                $totalUsersStmt = $pdo->query("SELECT COUNT(*) FROM usuario");
+                $activeUsersStmt = $pdo->query("SELECT COUNT(*) FROM usuario WHERE rol <> 'suspended'");
+                $suspendedUsersStmt = $pdo->query("SELECT COUNT(*) FROM usuario WHERE rol = 'suspended'");
+
+                $stats = [
+                    'total_users' => (int)$totalUsersStmt->fetchColumn(),
+                    'active_users' => (int)$activeUsersStmt->fetchColumn(),
+                    'suspended_users' => (int)$suspendedUsersStmt->fetchColumn(),
+                ];
             } catch (PDOException $e) {
                 $errorPayload = json_encode(['error' => 'Error al consultar la base de datos: ' . $e->getMessage()]);
                 $response->getBody()->write($errorPayload);
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
             }
-
-            $stats = [
-                'total_users' => count($users),
-                'active_users' => count(array_filter($users, fn($u) => $u['rol'] !== 'suspended')),
-                'suspended_users' => count(array_filter($users, fn($u) => $u['rol'] === 'suspended')),
-            ];
 
             $usersWithActions = array_map(function ($user) {
                 $mappedUser = [
@@ -52,7 +58,7 @@ class UserRoutes
         });
 
         // Crear un nuevo usuario
-        $app->post('/admin/users', function (Request $request, Response $response, $args) use ($pdo) {
+        $group->post('/users', function (Request $request, Response $response, $args) use ($pdo) {
             $data = $request->getParsedBody();
             $name = $data['name'] ?? null;
             $email = $data['email'] ?? null;
@@ -79,7 +85,7 @@ class UserRoutes
         });
 
         // Actualizar el estado de un usuario (suspender/reactivar)
-        $app->patch('/admin/users/{id}/status', function (Request $request, Response $response, $args) use ($pdo) {
+        $group->patch('/users/{id}/status', function (Request $request, Response $response, $args) use ($pdo) {
             $userId = $args['id'];
             $data = $request->getParsedBody();
             $newStatus = $data['status'] ?? null;
@@ -100,7 +106,7 @@ class UserRoutes
         });
 
         // Eliminar un usuario
-        $app->delete('/admin/users/{id}', function (Request $request, Response $response, $args) use ($pdo) {
+        $group->delete('/users/{id}', function (Request $request, Response $response, $args) use ($pdo) {
             $userId = $args['id'];
             $stmt = $pdo->prepare('DELETE FROM usuario WHERE id_usuario = ?');
             $stmt->execute([$userId]);

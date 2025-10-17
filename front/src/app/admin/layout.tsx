@@ -100,7 +100,7 @@ export default function AdminLayout({
                   }`}
                 >
                   <CalendarDays className="h-4 w-4" />
-                  Eventos
+                  Retos
                 </Link>
               </nav>
             </div>

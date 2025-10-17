@@ -2,7 +2,6 @@ const AUTH_API = process.env.NEXT_PUBLIC_AUTH_API_URL;
 const USER_API = process.env.NEXT_PUBLIC_USER_API_URL;
 const GAMIFICATION_API = process.env.NEXT_PUBLIC_GAMIFICATION_API_URL;
 const POSTS_API = process.env.NEXT_PUBLIC_POSTS_API_URL;
-const ADMIN_API = process.env.NEXT_PUBLIC_ADMIN_API_URL;
 
 // --- Funciones para el Servicio de Autenticación ---
 
@@ -117,42 +116,6 @@ export async function uploadProfilePicture(formData: FormData) {
     return response.json();
 }
 
-// --- Funciones para el Servicio de Admin (PHP) ---
-
-// Función genérica para hacer fetch con el token de ADMIN
-async function fetchWithAdminToken(url: string, options: RequestInit = {}) {
-  const token = localStorage.getItem('admin_token');
-  if (!token) {
-    window.location.href = '/admin/login';
-    throw new Error('No se encontró token de administrador. Por favor, inicie sesión.');
-  }
-
-  const headers: HeadersInit = {
-    'Authorization': `Bearer ${token}`,
-    ...options.headers,
-  };
-
-  const response = await fetch(url, { ...options, headers });
-
-  if (response.status === 401) {
-    localStorage.removeItem('admin_token');
-    window.location.href = '/admin/login'; // Redirigir al login de admin
-    throw new Error('Sesión de administrador expirada.');
-  }
-
-  if (!response.ok) {
-    // Intenta leer el cuerpo del error para dar un mensaje más específico
-    try {
-      const errorData = await response.json();
-      throw new Error(errorData.error || errorData.message || 'Error en la solicitud al servicio de admin.');
-    } catch (e) {
-      throw new Error(`Error en el servicio de admin: ${response.statusText} (Status: ${response.status})`);
-    }
-  }
-
-  return response.json();
-}
-
 // --- Funciones para el Servicio de Gamificación ---
 
 export async function getAchievementsProgress(userId: number) {
@@ -231,46 +194,4 @@ export async function toggleLike(postId: number) {
 
 export async function getLikes(postId: number) {
   return fetchWithToken(`${POSTS_API}/posts/${postId}/likes`);
-}
-
-
-
-
-/**
- * Obtiene las estadísticas y la lista de usuarios desde el microservicio de admin.
- * Requiere un token de admin válido.
- */
-export async function getAdminUsersData() {
-  return fetchWithAdminToken(`${ADMIN_API}/users`);
-}
-
-/**
- * Crea un nuevo usuario desde el panel de admin.
- */
-export async function createAdminUser(userData: { name: string, email: string, password?: string }) {
-  return fetchWithAdminToken(`${ADMIN_API}/users`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(userData),
-  });
-}
-
-/**
- * Actualiza el estado de un usuario (active/suspended).
- */
-export async function updateUserStatus(userId: number, status: 'active' | 'suspended') {
-  return fetchWithAdminToken(`${ADMIN_API}/users/${userId}/status`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ status }),
-  });
-}
-
-/**
- * Elimina un usuario desde el panel de admin.
- */
-export async function deleteAdminUser(userId: number) {
-  return fetchWithAdminToken(`${ADMIN_API}/users/${userId}`, {
-    method: 'DELETE',
-  });
 }
