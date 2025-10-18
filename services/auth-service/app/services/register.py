@@ -11,10 +11,14 @@ def save_verification_code(db: Session, email: str, code: str):
 
 def verify_code(db: Session, email: str, code: str) -> bool:
     verification_code = db.query(VerificationCode).filter_by(email=email, codigo=code).first()
-    if verification_code and verification_code.expiracion > datetime.now(timezone.utc):
-        db.delete(verification_code)
-        db.commit()
-        return True
+    if verification_code:
+        # Aseguramos que la fecha de expiración sea consciente de la zona horaria (UTC)
+        # antes de compararla. Esto resuelve el error "offset-naive vs offset-aware".
+        expiration_aware = verification_code.expiracion.replace(tzinfo=timezone.utc)
+        if expiration_aware > datetime.now(timezone.utc):
+            db.delete(verification_code)
+            db.commit()
+            return True
     return False
 
 def get_password_hash(password: str) -> str:
