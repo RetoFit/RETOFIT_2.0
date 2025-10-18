@@ -5,99 +5,113 @@ namespace App\Routes;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Interfaces\RouteCollectorProxyInterface;
-use PDO;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 
 class UserRoutes
 {
-    public function register(RouteCollectorProxyInterface $group, PDO $pdo)
+    public function register(RouteCollectorProxyInterface $group, Client $userServiceClient, Client $authServiceClient)
     {
         // Obtener todos los usuarios y estadísticas
-        $group->get('/users', function (Request $request, Response $response, $args) use ($pdo) {
+        $group->get('/users', function (Request $request, Response $response, $args) use ($userServiceClient, $authServiceClient) {
             try {
-                // 1. Obtener la lista de usuarios (con paginación en el futuro)
-                $stmt = $pdo->query('SELECT id_usuario, nombre, correo, rol FROM usuario ORDER BY id_usuario DESC LIMIT 100'); // Limite para seguridad
-                $users = $stmt->fetchAll();
+            
+                $authUsersResponse = $authServiceClient->get('/admin/users');
+                $authUsers = $authUsersResponse->getStatusCode() === 200 ? json_decode($authUsersResponse->getBody()->getContents(), true) : [];
+                $profileUsersResponse = $userServiceClient->get('/admin/users');
+                $profileUsers = $profileUsersResponse->getStatusCode() === 200 ? json_decode($profileUsersResponse->getBody()->getContents(), true) : [];
 
-                // 2. Obtener estadísticas directamente desde la base de datos (¡Mucho más rápido!)
-                $totalUsersStmt = $pdo->query("SELECT COUNT(*) FROM usuario");
-                $activeUsersStmt = $pdo->query("SELECT COUNT(*) FROM usuario WHERE rol <> 'suspended'");
-                $suspendedUsersStmt = $pdo->query("SELECT COUNT(*) FROM usuario WHERE rol = 'suspended'");
+                $statsResponse = $authServiceClient->get('/admin/users/stats');
+                $stats = $statsResponse->getStatusCode() === 200 ? json_decode($statsResponse->getBody()->getContents(), true) : ['total_users' => 0, 'active_users' => 0, 'suspended_users' => 0];
 
-                $stats = [
-                    'total_users' => (int)$totalUsersStmt->fetchColumn(),
-                    'active_users' => (int)$activeUsersStmt->fetchColumn(),
-                    'suspended_users' => (int)$suspendedUsersStmt->fetchColumn(),
-                ];
-            } catch (PDOException $e) {
-                $errorPayload = json_encode(['error' => 'Error al consultar la base de datos: ' . $e->getMessage()]);
+                // Crear un mapa con los detalles de perfil para una búsqueda rápida y eficiente
+                $profileMap = [];
+                foreach ($profileUsers as $profile) {
+                    // El user-service devuelve 'id', 'username', 'email' debido a los alias de Pydantic
+                    $profileMap[$profile['id']] = $profile;
+                }
+
+            } catch (GuzzleException $e) {
+                $errorPayload = json_encode(['error' => 'Error de comunicación con los microservicios: ' . $e->getMessage()]);
                 $response->getBody()->write($errorPayload);
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
             }
 
-            $usersWithActions = array_map(function ($user) {
+            // 4. Mapear y combinar los datos de ambos servicios
+            $enrichedUsers = array_map(function ($user) use ($profileMap) {
+                $userId = $user['id_usuario'];
+                $userDetails = $profileMap[$userId] ?? []; // Busca el perfil del usuario en el mapa
+                
                 $mappedUser = [
-                    'id' => $user['id_usuario'],
-                    'name' => $user['nombre'],
-                    'email' => $user['correo'],
+                    'id' => $userId,
+                    // El campo 'name' se ha eliminado a petición del usuario.
+                    'email' => $userDetails['email'] ?? $user['correo'] ?? null, // 'email' es el alias de 'correo'
+                    'provider' => $user['proveedor'] ?? 'local',
+                    // Usar datos del auth-service para estado y fecha de creación
                     'status' => $user['rol'] === 'suspended' ? 'suspended' : 'active',
-                    'last_login' => null,
+                    'created_at' => $user['fecha_creacion'],
                 ];
                 $mappedUser['_actions'] = [
-                    'view_details' => "/admin/users/{$mappedUser['id']}",
-                    'suspend' => $mappedUser['status'] === 'active' ? "/admin/users/{$mappedUser['id']}/suspend" : null,
-                    'reactivate' => $mappedUser['status'] === 'suspended' ? "/admin/users/{$mappedUser['id']}/reactivate" : null,
-                    'delete' => "/admin/users/{$mappedUser['id']}",
+                    'view_details' => "/admin/users/{$userId}",
+                    'suspend' => $mappedUser['status'] === 'active' ? "/admin/users/{$userId}/status" : null,
+                    'reactivate' => $mappedUser['status'] === 'suspended' ? "/admin/users/{$userId}/status" : null,
+                    'delete' => "/admin/users/{$userId}",
                 ];
                 return $mappedUser;
-            }, $users);
+            }, $authUsers);
 
-            $data = ['stats' => $stats, 'users' => $usersWithActions];
+            $data = ['stats' => $stats, 'users' => $enrichedUsers];
             $payload = json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
             $response->getBody()->write($payload);
             return $response->withHeader('Content-Type', 'application/json');
         });
 
-        // Crear un nuevo usuario
-        $group->post('/users', function (Request $request, Response $response, $args) use ($pdo) {
+        $group->post('/users', function (Request $request, Response $response, $args) use ($authServiceClient) {
             $data = $request->getParsedBody();
-            $name = $data['name'] ?? null;
-            $email = $data['email'] ?? null;
-            $password = $data['password'] ?? null;
 
-            if (!$name || !$email || !$password) {
+            if (empty($data['name']) || empty($data['email']) || empty($data['password'])) {
                 $response->getBody()->write(json_encode(['error' => 'Nombre, email y contraseña son requeridos.']));
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
             }
 
-            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-
             try {
-                $stmt = $pdo->prepare('INSERT INTO usuario (nombre, correo, contraseña, rol, proveedor) VALUES (?, ?, ?, ?, ?)');
-                $stmt->execute([$name, $email, $hashedPassword, 'user', 'local']);
-            } catch (PDOException $e) {
-                $response->getBody()->write(json_encode(['error' => 'No se pudo crear el usuario. El email ya podría existir.']));
+                $authResponse = $authServiceClient->post('/auth/register', [
+                    'json' => [
+                        'name' => $data['name'],
+                        'last_name' => $data['last_name'] ?? '',
+                        'email' => $data['email'],
+                        'password' => $data['password']
+                    ]
+                ]);
+            } catch (GuzzleException $e) {
+                $response->getBody()->write(json_encode(['error' => 'No se pudo crear el usuario: ' . $e->getMessage()]));
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(409);
             }
 
-            $payload = json_encode(['message' => "Usuario '{$name}' creado con éxito."]);
+            $payload = json_encode(['message' => "Usuario '{$data['name']}' creado con éxito."]);
             $response->getBody()->write($payload);
             return $response->withHeader('Content-Type', 'application/json')->withStatus(201);
         });
 
         // Actualizar el estado de un usuario (suspender/reactivar)
-        $group->patch('/users/{id}/status', function (Request $request, Response $response, $args) use ($pdo) {
+        $group->patch('/users/{id}/status', function (Request $request, Response $response, $args) use ($authServiceClient) {
             $userId = $args['id'];
             $data = $request->getParsedBody();
             $newStatus = $data['status'] ?? null;
-            $newRole = ($newStatus === 'active') ? 'user' : 'suspended';
 
             if ($newStatus !== 'active' && $newStatus !== 'suspended') {
                 $response->getBody()->write(json_encode(['error' => 'Estado no válido.']));
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
             }
 
-            $stmt = $pdo->prepare('UPDATE usuario SET rol = ? WHERE id_usuario = ?');
-            $stmt->execute([$newRole, $userId]);
+            try {
+                $authServiceClient->patch("/admin/users/{$userId}/status", [
+                    'json' => ['status' => $newStatus]
+                ]);
+            } catch (GuzzleException $e) {
+                $response->getBody()->write(json_encode(['error' => 'No se pudo actualizar el usuario: ' . $e->getMessage()]));
+                return $response->withHeader('Content-Type', 'application/json')->withStatus($e->getCode());
+            }
 
             $action = $newStatus === 'active' ? 'reactivado' : 'suspendido';
             $payload = json_encode(['message' => "Usuario {$action} con éxito."]);
@@ -106,13 +120,16 @@ class UserRoutes
         });
 
         // Eliminar un usuario
-        $group->delete('/users/{id}', function (Request $request, Response $response, $args) use ($pdo) {
+        $group->delete('/users/{id}', function (Request $request, Response $response, $args) use ($userServiceClient, $authServiceClient) {
             $userId = $args['id'];
-            $stmt = $pdo->prepare('DELETE FROM usuario WHERE id_usuario = ?');
-            $stmt->execute([$userId]);
-
-            if ($stmt->rowCount() === 0) {
-                $response->getBody()->write(json_encode(['error' => 'Usuario no encontrado.']));
+            
+            try {
+               
+                $authServiceClient->delete("/admin/users/{$userId}");
+                $userServiceClient->delete("/admin/users/{$userId}");
+            } catch (GuzzleException $e) {
+                
+                $response->getBody()->write(json_encode(['error' => 'No se pudo eliminar el usuario: ' . $e->getMessage()]));
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
             }
 

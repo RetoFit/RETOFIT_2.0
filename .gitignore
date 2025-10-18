@@ -23,10 +23,6 @@ Thumbs.db
 
 # Python
 # Entornos virtuales
-/services/*/venv
-/services/*/.venv
-/services/*/env
-/services/*/.env
 
 # Archivos de caché de Python
 /services/*/__pycache__/

@@ -89,11 +89,20 @@ async function fetchWithToken(url: string, options: RequestInit = {}) {
 }
 
 
-export async function getCurrentUser() {
+export async function getCurrentUser(): Promise<{ is_profile_complete: boolean; [key: string]: any }> {
   return fetchWithToken(`${USER_API}/me`);
 }
 
-export async function updateUserProfile(profileData: { name?: string, last_name?: string }) {
+export async function updateUserProfile(profileData: {
+  name?: string;
+  last_name?: string;
+  age?: number;
+  weight?: number;
+  height?: number;
+  gender?: string;
+  fitness_level?: string;
+  favorite_sports?: string;
+}) {
     return fetchWithToken(`${USER_API}/me`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
