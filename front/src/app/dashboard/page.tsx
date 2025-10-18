@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Activity,
@@ -29,11 +29,11 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { getCurrentUser, getAchievementsProgress } from '@/lib/api';
 
-
 // ¡Ya no importamos datos de prueba!
 
 // Definimos los tipos de datos que esperamos de la API
 interface UserData {
+  is_profile_complete: boolean;
   id: number;
   username: string;
 }
@@ -61,7 +61,7 @@ export default function Dashboard() {
         // 1. Obtener los datos del usuario actual desde el user-service
         const userData = await getCurrentUser();
         // El backend ahora devuelve 'username' en lugar de 'nombre'
-        setCurrentUser({ id: userData.id, username: userData.username });
+        setCurrentUser({ id: userData.id, username: userData.username, is_profile_complete: userData.is_profile_complete });
 
         // 2. Con el ID del usuario, obtener el progreso desde el gamification-service
         const challengesData = await getAchievementsProgress(userData.id);

@@ -1,8 +1,9 @@
 # app/db/models.py
 
 from sqlalchemy import Column, Integer, String, DateTime, func
+from datetime import datetime
 from .session import Base
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
 
 class EmailCheckRequest(BaseModel):
@@ -13,12 +14,19 @@ class EmailVerificationRequest(BaseModel):
     code: str
 
 class UserRegistrationRequest(BaseModel):
-    name: str
-    last_name: Optional[str] = None
-    email: EmailStr
+    id_usuario: Optional[int] = Field(None, alias='id_usuario') # Añadido para las respuestas
+    name: str = Field(..., alias='nombre')
+    last_name: Optional[str] = Field(None, alias='apellido')
+    email: EmailStr = Field(..., alias='correo')
     password: Optional[str] = None
-    provider: str = "local"
-    # Se eliminan los campos no relacionados a la autenticación
+    provider: Optional[str] = Field("local", alias='proveedor')
+    rol: Optional[str] = Field("user", alias='rol')
+    fecha_creacion: Optional[datetime] = Field(None, alias='fecha_creacion')
+    
+
+    class Config:
+        from_attributes = True
+        populate_by_name = True # Permite usar tanto 'email' como 'correo'
 
 class User(Base):
     __tablename__ = 'usuario'
@@ -59,3 +67,6 @@ class ForgotPasswordRequest(BaseModel):
 class ResetPasswordRequest(BaseModel):
     token: str
     new_password: str
+
+class UserStatusUpdate(BaseModel):
+    status: str = Field(..., pattern="^(active|suspended)$")

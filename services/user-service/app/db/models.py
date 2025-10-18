@@ -2,7 +2,7 @@
 
 from sqlalchemy import Column, Integer, String, Float
 from .session import Base
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 
 class User(Base):
@@ -32,17 +32,17 @@ class UserUpdateRequest(BaseModel):
     deportes_favoritos: Optional[str] = None
 
 class UserProfileResponse(BaseModel):
-    id: int
-    username: str
-    lastname: Optional[str]
-    email: str
-    age: Optional[int]
-    weight: Optional[float]
-    height: Optional[float]
-    gender: Optional[str]
-    fitness_level: Optional[str]
-    foto_perfil_url: Optional[str]
-    deportes_favoritos: str | None = None
+    id: int = Field(..., alias='id_usuario')
+    username: str = Field(..., alias='nombre')
+    lastname: Optional[str] = Field(None, alias='apellido')
+    email: str = Field(..., alias='correo')
+    age: Optional[int] = Field(None, alias='edad')
+    weight: Optional[float] = Field(None, alias='peso')
+    height: Optional[float] = Field(None, alias='altura')
+    gender: Optional[str] = Field(None, alias='genero')
+    fitness_level: Optional[str] = Field(None, alias='nivel_condicion_fisica')
+    foto_perfil_url: Optional[str] = Field(None, alias='foto_perfil_url')
+    deportes_favoritos: Optional[str] = Field(None, alias='deportes_favoritos')
     # Se eliminan los puntos y actividades, ya que se obtendrán del gamification-service
 
     class Config:
