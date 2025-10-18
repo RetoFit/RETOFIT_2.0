@@ -6,6 +6,7 @@ from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
+import httpx
 
 from app.core.email import send_email_async
 from app.db.session import get_db
@@ -21,6 +22,7 @@ router = APIRouter()
 security = HTTPBearer()
 
 
+USER_SERVICE_URL = "http://127.0.0.1:8004"
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 FRONTEND_URL = os.getenv("FRONTEND_URL")
@@ -118,6 +120,23 @@ async def register_user(request: UserRegistrationRequest, db: Session = Depends(
     db.add(user)
     db.commit()
     db.refresh(user)
+    # Notificar al user-service para que cree el perfil
+    try:
+        async with httpx.AsyncClient() as client:
+            user_profile_data = {
+                "id_usuario": user.id_usuario,
+                "nombre": user.nombre,
+                "apellido": user.apellido,
+                "correo": user.correo,
+            }
+            response = await client.post(f"{USER_SERVICE_URL}/users/", json=user_profile_data)
+            response.raise_for_status() # Lanza un error si la solicitud falla
+    except httpx.RequestError as e:
+        # En un sistema real, aquí manejarías el error (e.g., reintentos, logs)
+        # Por ahora, lanzamos una excepción para saber que algo falló
+        print(f"Error al notificar al user-service: {e}")
+        raise HTTPException(status_code=500, detail="Error al crear el perfil de usuario.")
+
     # En una arquitectura real, aquí podrías emitir un evento 'user_created'
     return {"status": "success", "message": "Usuario registrado correctamente", "user_id": user.id_usuario}
 

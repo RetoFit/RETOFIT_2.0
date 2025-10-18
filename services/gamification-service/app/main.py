@@ -3,9 +3,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.endpoints import router as gamification_router
-from app.db.session import engine, Base
+# Removed: from app.db.session import engine, Base
 
-Base.metadata.create_all(bind=engine)
+# Removed: Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Gamification Service")
 

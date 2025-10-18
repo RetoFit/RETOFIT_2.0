@@ -5,7 +5,7 @@ import shutil
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
-
+from pydantic import BaseModel, EmailStr
 from app.db.session import get_db
 from app.db.models import User, UserUpdateRequest, UserProfileResponse
 from app.services.token import get_current_user_email
@@ -15,6 +15,35 @@ router = APIRouter()
 
 BACKEND_URL = "http://127.0.0.1:8004"
 print(f"--- LA URL DEL BACKEND ESTÁ CONFIGURADA COMO: {BACKEND_URL} ---")
+
+class UserCreate(BaseModel):
+    id_usuario: int
+    nombre: str
+    apellido: str | None = None
+    correo: EmailStr
+
+@router.post("/", status_code=201)
+async def create_user_profile(user_data: UserCreate, db: Session = Depends(get_db)):
+    """
+    Endpoint interno para que auth-service cree un perfil de usuario.
+    """
+    # Verificamos si ya existe, aunque no debería si el flujo es correcto
+    db_user = db.query(User).filter(User.id_usuario == user_data.id_usuario).first()
+    if db_user:
+        raise HTTPException(status_code=400, detail="El perfil de usuario ya existe.")
+    
+    new_user = User(
+        id_usuario=user_data.id_usuario,
+        nombre=user_data.nombre,
+        apellido=user_data.apellido,
+        correo=user_data.correo,
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return {"status": "success", "message": "Perfil de usuario creado."}
+
+
 
 @router.get("/me", response_model=UserProfileResponse)
 async def get_current_user(email: str = Depends(get_current_user_email), db: Session = Depends(get_db)):
