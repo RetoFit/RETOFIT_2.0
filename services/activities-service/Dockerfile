@@ -15,6 +15,8 @@ COPY ./app ./app
 
 ENV DATABASE_URL: "postgresql://postgres:Retofit2025@retofit.cd66iick6o60.us-east-2.rds.amazonaws.com:5432/RetoFit"
 
+EXPOSE 8000
+
 # Comando para ejecutar la aplicación
 CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
 

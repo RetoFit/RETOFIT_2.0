@@ -18,6 +18,7 @@ ENV DATABASE_URL: "postgresql://postgres:Retofit2025@retofit.cd66iick6o60.us-eas
 ENV SECRET_KEY: "f40cf292b97e6ec1e40e6a376e035ee9ebd9369c9dc233c474216ec0fe1b54aa"
 ENV ALGORITHM: "HS256"
 
+EXPOSE 8000
 
 # Comando para ejecutar la aplicación
 CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
