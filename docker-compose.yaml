@@ -1,17 +1,22 @@
 services:
   frontend:
-    build: ./frontend
+    build: ./front
     ports:
       - "3000:3000"
+    depends_on:
+      - auth-service
+      - activities-service
+      - gamification-service
+      - user-service
     volumes:
-      - ./frontend:/app
+      - ./front:/app
       - /app/node_modules
       - /app/.next 
     environment:
-      -NEXT_PUBLIC_AUTH_API_URL: "http://127.0.0.1:8001/auth"
-      -NEXT_PUBLIC_USER_API_URL: "http://127.0.0.1:8004/users"
-      -NEXT_PUBLIC_GAMIFICATION_API_URL: "http://127.0.0.1:8003/gamification"
-      -NEXT_PUBLIC_ACTIVITIES_API_URL: "http://127.0.0.1:8002/activities"
+      - NEXT_PUBLIC_AUTH_API_URL: "http://127.0.0.1:8001/auth"
+      - NEXT_PUBLIC_USER_API_URL: "http://127.0.0.1:8004/users"
+      - NEXT_PUBLIC_GAMIFICATION_API_URL: "http://127.0.0.1:8003/gamification"
+      - NEXT_PUBLIC_ACTIVITIES_API_URL: "http://127.0.0.1:8002/activities"
     # depends_on removido ya que no hay api-gateway
     command: npm run dev
 
@@ -20,35 +25,47 @@ services:
     ports:
       - "8001:8000"  
     environment:
-      PORT: "8000"
-      MAIL_USERNAME: "retofitapp@gmail.com"
-      MAIL_PASSWORD: "ubid jqul mzmg nnwh"
-      MAIL_FROM: "retofitapp@gmail.com"
-      SECRET_KEY: "f40cf292b97e6ec1e40e6a376e035ee9ebd9369c9dc233c474216ec0fe1b54aa"
-      ALGORITHM: "HS256"
+      - PORT: "8000"
+      - MAIL_USERNAME: "retofitapp@gmail.com"
+      - MAIL_PASSWORD: "ubid jqul mzmg nnwh"
+      - MAIL_FROM: "retofitapp@gmail.com"
+      - SECRET_KEY: "f40cf292b97e6ec1e40e6a376e035ee9ebd9369c9dc233c474216ec0fe1b54aa"
+      - ALGORITHM: "HS256"
+    networks:
+      - "app-network"
 
   activities-service:
     build: ./services/activities-service
     ports:
       - "8002:8000"
     environment:
-      PORT: "8000"
-      DATABASE_URL: "postgresql://postgres:Retofit2025@retofit.cd66iick6o60.us-east-2.rds.amazonaws.com:5432/RetoFit"
+      - PORT: "8000"
+      - DATABASE_URL: "postgresql://postgres:Retofit2025@retofit.cd66iick6o60.us-east-2.rds.amazonaws.com:5432/RetoFit"
+    networks:
+      - "app-network"
 
   gamification-service:
     build: ./services/gamification-service
     ports:
       - "8003:8000"
     environment:
-      PORT: "8000"
-      DATABASE_URL: "postgresql://postgres:Retofit2025@retofit.cd66iick6o60.us-east-2.rds.amazonaws.com:5432/RetoFit"
+      - PORT: "8000"
+      - DATABASE_URL: "postgresql://postgres:Retofit2025@retofit.cd66iick6o60.us-east-2.rds.amazonaws.com:5432/RetoFit"
+    networks:
+      - "app-network"
 
   user-service:
     build: ./services/user-service
     ports:
       - "8004:8000"
     environment:
-      PORT: "8000"
-      DATABASE_URL: "postgresql://postgres:Retofit2025@retofit.cd66iick6o60.us-east-2.rds.amazonaws.com:5432/RetoFit"
-      SECRET_KEY: "f40cf292b97e6ec1e40e6a376e035ee9ebd9369c9dc233c474216ec0fe1b54aa"
-      ALGORITHM: "HS256"
+      - PORT: "8000"
+      - DATABASE_URL: "postgresql://postgres:Retofit2025@retofit.cd66iick6o60.us-east-2.rds.amazonaws.com:5432/RetoFit"
+      - SECRET_KEY: "f40cf292b97e6ec1e40e6a376e035ee9ebd9369c9dc233c474216ec0fe1b54aa"
+      - ALGORITHM: "HS256"
+    networks:
+      - "app-network"
+
+networks:
+  app-network:
+    driver: bridge

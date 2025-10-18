@@ -39,30 +39,6 @@ export async function loginUser(email, password) {
   return response.json(); // Devuelve { access_token, token_type }
 }
 
-export async function registerUser(name: string, last_name: string, email: string, password: string) {
-  try {
-    const response = await fetch(`${AUTH_API}/register`, {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json', 
-        'CORS-Allow-Origin': '*'  // Agregar esta línea para permitir CORS
-      },
-      body: JSON.stringify({ name, last_name, email, password}),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || 'Error al crear el usuario');
-    }
-
-    const data = await response.json();
-    return data; // Devuelve los datos del usuario creado
-  } catch (error) {
-    console.error('Error: ', error);
-    throw error;
-  }
-}
-
 // --- Funciones para el Servicio de Usuarios ---
 
 // Función genérica para hacer fetch con token
