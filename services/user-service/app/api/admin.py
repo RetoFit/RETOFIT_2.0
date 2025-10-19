@@ -77,3 +77,9 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
     """
     Elimina un usuario de la base de datos.
     """
+    user = db.query(User).filter(User.id_usuario == user_id).first()
+    if not user:
+        return
+    db.delete(user)
+    db.commit()
+    return
