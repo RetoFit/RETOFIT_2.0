@@ -14,6 +14,46 @@ RETOFIT es una plataforma diseñada para [**aquí puedes añadir una breve descr
 
 ## 🚀 Guía de Instalación y Ejecución
 
+Recordar tener docker instalado y ejecutandose.
+
+Para iniciar la aplicación en docker, se tiene que seguir los siguientes pasos:
+
+**1. Contruir todos los contenedores**
+
+```shell
+docker compose build
+```
+
+**2. Lanzar todos los contenedores**
+
+```shell
+docker compose up -d
+```
+
+Abre la siguiente url en el navegador:
+
+- http://localhost:3000
+
+
+---
+**Ver el estado de todos los contenedores**
+
+```shell
+docker compose ps
+```
+
+**Ver logs de un servicio específico**
+
+```shell
+docker compose logs -f [nombre-servicio]
+```
+**Para apagar y borrar todos los contenedores**
+
+```shell
+docker compose down
+```
+---
+
 Sigue estos pasos para configurar y ejecutar el proyecto en tu entorno de desarrollo local.
 
 ### ✅ Requisitos Previos

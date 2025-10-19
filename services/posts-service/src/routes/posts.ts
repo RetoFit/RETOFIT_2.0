@@ -32,7 +32,7 @@ router.get('/posts', authMiddleware, async (req: AuthRequest, res) => {
     });
 
     // Formatear la respuesta
-    const formattedPosts = posts.map(post => ({
+    const formattedPosts = posts.map((post: any) => ({
       ...post,
       likesCount: post.likes.length,
       commentsCount: post.comments.length,

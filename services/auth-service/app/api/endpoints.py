@@ -22,7 +22,7 @@ router = APIRouter()
 security = HTTPBearer()
 
 
-USER_SERVICE_URL = "http://127.0.0.1:8004"
+USER_SERVICE_URL = "http://user-service:8000"
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 FRONTEND_URL = os.getenv("FRONTEND_URL")
