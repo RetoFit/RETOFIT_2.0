@@ -7,3 +7,4 @@ python-jose[cryptography]
 PyJWT
 passlib[bcrypt] # Necesario para la seguridad del token
 python-multipart
+pydantic[email]
