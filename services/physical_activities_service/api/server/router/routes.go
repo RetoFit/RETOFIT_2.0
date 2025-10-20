@@ -8,8 +8,8 @@ import (
 
 func RegisterPublicEndpoints(router *gin.Engine, ActivityHandlers *handlers.Activity) {
 	router.GET("/activities/users/:id/activities", ActivityHandlers.GetAllActivitiesByUser)
-	router.GET("/activities/:id", ActivityHandlers.GetActivity)
+	router.GET("/activities/user/:id/activity/:id_activty", ActivityHandlers.GetActivity)
 	router.POST("/activities/users/:id/activities", ActivityHandlers.CreateActivity)
-	router.PUT("/activities/update/:id", ActivityHandlers.UpdateActivity)
-	router.DELETE("/activities/:id", ActivityHandlers.DeleteActivity)
+	router.PUT("/activities/user/:id/update/:id_activity", ActivityHandlers.UpdateActivity)
+	router.DELETE("/activities/user/:id/delete/:id_activity", ActivityHandlers.DeleteActivity)
 }

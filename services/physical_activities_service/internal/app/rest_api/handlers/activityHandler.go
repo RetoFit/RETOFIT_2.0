@@ -41,7 +41,8 @@ func (h *Activity) GetAllActivitiesByUser(ctx *gin.Context) {
 }
 
 func (h *Activity) GetActivity(ctx *gin.Context) {
-	activityID, err := strconv.Atoi(ctx.Param("id"))
+	activityID, err := strconv.Atoi(ctx.Param("id_activty"))
+	userID, errUser := strconv.Atoi(ctx.Param("id"))
 
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Activity ID not valid"})
@@ -49,7 +50,13 @@ func (h *Activity) GetActivity(ctx *gin.Context) {
 		return
 	}
 
-	Activity, ActivityErr := h.ActivityService.GetActivity(activityID)
+	if errUser != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "User ID not valid"})
+
+		return
+	}
+
+	Activity, ActivityErr := h.ActivityService.GetActivity(userID, activityID)
 	if ActivityErr != nil {
 		ctx.AbortWithStatusJSON(ActivityErr.Code, ActivityErr)
 
@@ -60,14 +67,22 @@ func (h *Activity) GetActivity(ctx *gin.Context) {
 }
 
 func (h *Activity) DeleteActivity(ctx *gin.Context) {
-	activityID, err := strconv.Atoi(ctx.Param("id"))
+	activityID, err := strconv.Atoi(ctx.Param("id_activity"))
+	userID, errUser := strconv.Atoi(ctx.Param("id"))
+
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Activity ID not valid"})
 
 		return
 	}
 
-	deleteError := h.ActivityService.DeleteActivity(activityID)
+	if errUser != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Activity ID not valid"})
+
+		return
+	}
+
+	deleteError := h.ActivityService.DeleteActivity(userID, activityID)
 	if deleteError != nil {
 		ctx.AbortWithStatusJSON(deleteError.Code, deleteError)
 
@@ -115,9 +130,17 @@ func (h *Activity) CreateActivity(ctx *gin.Context) {
 }
 
 func (h *Activity) UpdateActivity(ctx *gin.Context) {
-	ActivityID, err := strconv.Atoi(ctx.Param("id"))
+	ActivityID, err := strconv.Atoi(ctx.Param("id_activity"))
+	UserID, errUser := strconv.Atoi(ctx.Param("id"))
+
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Activity ID not valid"})
+
+		return
+	}
+
+	if errUser != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "User ID not valid"})
 
 		return
 	}
@@ -140,7 +163,7 @@ func (h *Activity) UpdateActivity(ctx *gin.Context) {
 		return
 	}
 
-	updateError := h.ActivityService.UpdateActivity(ActivityID, &updateActivityRequest)
+	updateError := h.ActivityService.UpdateActivity(UserID, ActivityID, &updateActivityRequest)
 	if updateError != nil {
 		ctx.AbortWithStatusJSON(updateError.Code, updateError)
 

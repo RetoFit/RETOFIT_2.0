@@ -24,11 +24,11 @@ func mapActivities(rows *sql.Rows, u *entities.Activity) error {
 	return rows.Scan(&u.IdActividad, &u.Tipo, &u.DistanciaKm, &u.DuracionMin, &u.Fecha, &u.IdUsuaio)
 }
 
-func (r *Activity) FindById(id int) (*entities.Activity, error) {
+func (r *Activity) FindById(id int, idActivity int) (*entities.Activity, error) {
 	return r.SelectSingle(
 		mapActivity,
-		"SELECT u.id_actividad, u.tipo, u.distancia_km, u.duracion_min, u.fecha, u.id_usuario FROM actividades u WHERE u.id_actividad = $1",
-		id,
+		"SELECT u.id_actividad, u.tipo, u.distancia_km, u.duracion_min, u.fecha, u.id_usuario FROM actividades u WHERE u.id_usuario = $1 AND u.id_actividad = $2",
+		id, idActivity,
 	)
 }
 
@@ -58,8 +58,8 @@ func (r *Activity) Update(activity *entities.Activity) error {
 	return err
 }
 
-func (r *Activity) DeleteActivity(id int) error {
-	_, err := r.ExecuteQuery("DELETE FROM actividades WHERE id_actividad = $1", id)
+func (r *Activity) DeleteActivity(idUser int, idActivity int) error {
+	_, err := r.ExecuteQuery("DELETE FROM actividades WHERE id_usuario = $1 AND id_actividad = $2", idUser, idActivity)
 
 	return err
 }

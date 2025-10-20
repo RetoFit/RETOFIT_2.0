@@ -34,10 +34,10 @@ func (us *Activity) GetAllActivitiesByUser(id int) (*dtos.GetAllActivitiesRespon
 	return response, nil
 }
 
-func (us *Activity) GetActivity(ActivityID int) (*dtos.ActivityResponse, *models.ErrorResponse) {
+func (us *Activity) GetActivity(userId int, ActivityID int) (*dtos.ActivityResponse, *models.ErrorResponse) {
 	response := &dtos.ActivityResponse{}
 
-	Activity, err := us.ActivityRepo.FindById(ActivityID)
+	Activity, err := us.ActivityRepo.FindById(userId, ActivityID)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -57,8 +57,8 @@ func (us *Activity) GetActivity(ActivityID int) (*dtos.ActivityResponse, *models
 	return response, nil
 }
 
-func (us *Activity) DeleteActivity(ActivityId int) *models.ErrorResponse {
-	Activity, err := us.ActivityRepo.FindById(ActivityId)
+func (us *Activity) DeleteActivity(userId int, ActivityId int) *models.ErrorResponse {
+	Activity, err := us.ActivityRepo.FindById(userId, ActivityId)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return &models.ErrorResponse{
@@ -71,7 +71,7 @@ func (us *Activity) DeleteActivity(ActivityId int) *models.ErrorResponse {
 			Message: "Internal Server Error",
 		}
 	}
-	err = us.ActivityRepo.DeleteActivity(Activity.IdActividad)
+	err = us.ActivityRepo.DeleteActivity(Activity.IdUsuaio, Activity.IdActividad)
 	if err != nil {
 		return &models.ErrorResponse{
 			Code:    http.StatusInternalServerError,
@@ -98,8 +98,9 @@ func (us *Activity) CreateActivity(userId int, createActivityRequest *dtos.Creat
 	return activityResponse.FromActivity(activity), nil
 }
 
-func (us *Activity) UpdateActivity(ActivityID int, updateActivityRequest *dtos.UpdateActivityRequest) *models.ErrorResponse {
-	existingActivity, err := us.ActivityRepo.FindById(ActivityID)
+func (us *Activity) UpdateActivity(userID int, ActivityID int, updateActivityRequest *dtos.UpdateActivityRequest) *models.ErrorResponse {
+	existingActivity, err := us.ActivityRepo.FindById(userID, ActivityID)
+
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return &models.ErrorResponse{
@@ -115,6 +116,7 @@ func (us *Activity) UpdateActivity(ActivityID int, updateActivityRequest *dtos.U
 
 	existingActivity = updateActivityRequest.ToActivity()
 	existingActivity.IdActividad = ActivityID
+	existingActivity.IdUsuaio = userID
 
 	err = us.ActivityRepo.Update(existingActivity)
 
