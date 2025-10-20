@@ -72,14 +72,14 @@ export default function ProfilePage() {
           
         // 2. Mapeamos los datos de la API a nuestro nuevo estado
         const initialData = {
-          nombre: data.username,
-          apellido: data.lastname,
-          email: data.email,
-          edad: data.age,
-          peso: data.weight,
-          altura: data.height,
-          genero: data.gender,
-          nivel_condicion_fisica: data.fitness_level,
+          nombre: data.nombre,
+          apellido: data.apellido,
+          email: data.correo,
+          edad: data.edad,
+          peso: data.peso,
+          altura: data.altura,
+          genero: data.genero,
+          nivel_condicion_fisica: data. nivel_condicion_fisica,
           deportes_favoritos: data.deportes_favoritos,
           foto_perfil_url: fotoUrl, // ✅ ahora seguro
           

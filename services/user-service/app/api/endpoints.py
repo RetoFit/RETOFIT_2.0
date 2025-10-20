@@ -51,20 +51,7 @@ async def get_current_user(email: str = Depends(get_current_user_email), db: Ses
     if user is None:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     
-    return UserProfileResponse(
-        id=user.id_usuario,
-        username=user.nombre,
-        lastname=user.apellido,
-        email=user.correo,
-        age=user.edad,
-        weight=user.peso,
-        height=user.altura,
-        gender=user.genero,
-        fitness_level=user.nivel_condicion_fisica,
-        foto_perfil_url=user.foto_perfil_url,
-        deportes_favoritos=user.deportes_favoritos
-        
-    )
+    return user
 
 @router.put("/me")
 async def update_current_user(
