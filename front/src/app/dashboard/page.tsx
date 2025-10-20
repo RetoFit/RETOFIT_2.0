@@ -38,6 +38,12 @@ interface UserData {
   username: string;
 }
 
+interface UserApiResponse {
+  is_profile_complete: boolean;
+  id_usuario: number; // <--- Cambiado de 'id'
+  nombre: string;     // <--- Cambiado de 'username'
+}
+
 interface ChallengeData {
   id: number;
   nombre: string;
@@ -50,7 +56,7 @@ interface ChallengeData {
 
 export default function Dashboard() {
   const router = useRouter();
-  const [currentUser, setCurrentUser] = useState<UserData | null>(null);
+  const [currentUser, setCurrentUser] = useState<{ id: number; username: string; is_profile_complete: boolean; } | null>(null);
   const [myChallenges, setMyChallenges] = useState<ChallengeData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -61,11 +67,15 @@ export default function Dashboard() {
         // 1. Obtener los datos del usuario actual desde el user-service
         const userData = await getCurrentUser();
         // El backend ahora devuelve 'username' en lugar de 'nombre'
-        setCurrentUser({ id: userData.id, username: userData.username, is_profile_complete: userData.is_profile_complete });
+        setCurrentUser({
+          id: userData.id_usuario,
+          username: userData.nombre,
+          is_profile_complete: userData.is_profile_complete
+        });
 
         // 2. Con el ID del usuario, obtener el progreso desde el gamification-service
-        const challengesData = await getAchievementsProgress(userData.id);
-        setMyChallenges(challengesData);
+        const challengesData = await getAchievementsProgress(userData.id_usuario);
+        setMyChallenges(challengesData)
 
       } catch (err: any) {
         setError(err.message);
