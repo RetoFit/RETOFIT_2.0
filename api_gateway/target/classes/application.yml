@@ -1,0 +1,77 @@
+server:
+  port: 8080
+
+spring:
+  cloud:
+    gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:3000"   # frontend Next.js local
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+
+
+      routes:
+        - id: frontend
+          uri: http://localhost:3000
+          predicates:
+            - Path=/, /index.html, /static/**, /_next/**, /frontend/**, /login, /register
+
+        - id: auth-service
+          uri: http://localhost:8001
+          predicates:
+            - Path=/api/auth/**, /auth/**
+          filters:
+            - StripPrefix=1
+
+        - id: gamification-service
+          uri: http://localhost:8003
+          predicates:
+            - Path=/users/**, /api/users/**
+          filters:
+            - StripPrefix=1
+
+        - id: user-service
+          uri: http://localhost:8004
+          predicates:
+            - Path=/api/users/**, /users/**
+          filters:
+            - StripPrefix=1
+
+        - id: posts-service
+          uri: http://localhost:8005
+          predicates:
+            - Path=/api/posts/**, /posts/**
+          filters:
+            - StripPrefix=1
+
+        - id: admin-service
+          uri: http://localhost:8006
+          predicates:
+            - Path=/api/admin/**, /admin/**
+          filters:
+            - StripPrefix=1
+
+        - id: activities-service
+          uri: http://localhost:8002
+          predicates:
+            - Path=/api/activities/**, /activities/**
+          filters:
+            - StripPrefix=1
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
