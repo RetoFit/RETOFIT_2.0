@@ -23,6 +23,7 @@ security = HTTPBearer()
 
 
 USER_SERVICE_URL = "http://127.0.0.1:8004"
+PHYSICAL_ACTIVITIES_SERVICE_URL = "http://localhost:8000"
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 FRONTEND_URL = os.getenv("FRONTEND_URL")
@@ -131,11 +132,19 @@ async def register_user(request: UserRegistrationRequest, db: Session = Depends(
             }
             response = await client.post(f"{USER_SERVICE_URL}/users/", json=user_profile_data)
             response.raise_for_status() # Lanza un error si la solicitud falla
+            # 2. Notificar a physical-activities-service (NUEVO)
+            # Este servicio solo necesita el ID para crear la referencia.
+            activity_user_data = {"id_usuario": user.id_usuario}
+            # El endpoint podría ser '/users' o similar. Debes crearlo en el servicio de Go.
+            response_activities = await client.post(f"{PHYSICAL_ACTIVITIES_SERVICE_URL}/users", json=activity_user_data)
+            response_activities.raise_for_status()
+            
+    
     except httpx.RequestError as e:
         # En un sistema real, aquí manejarías el error (e.g., reintentos, logs)
         # Por ahora, lanzamos una excepción para saber que algo falló
         print(f"Error al notificar al user-service: {e}")
-        raise HTTPException(status_code=500, detail="Error al crear el perfil de usuario.")
+        raise HTTPException(status_code=500, detail=f"Error al comunicar con servicios internos: {e.url}")
 
     # En una arquitectura real, aquí podrías emitir un evento 'user_created'
     return {"status": "success", "message": "Usuario registrado correctamente", "user_id": user.id_usuario}
