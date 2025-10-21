@@ -41,13 +41,28 @@ func main() {
 	}()
 
 	// Initialize repositories
-	userRepo := repositories.NewActivityRepository(client.DB)
+	activityRepo := repositories.NewActivityRepository(client.DB)
+
+	// --- INICIO DEL CAMBIO ---
+	// Inicializar el nuevo repositorio de usuario
+	userRepo := repositories.NewUserRepository(client.DB)
+	// --- FIN DEL CAMBIO ---
 
 	//Initialize services
-	userService := services.NewActivityService(userRepo)
+	activityService := services.NewActivityService(activityRepo)
+
+	// --- INICIO DEL CAMBIO ---
+	// Inicializar el nuevo servicio de usuario
+	userService := services.NewUserService(userRepo)
+	// --- FIN DEL CAMBIO ---
 
 	// Pass services to handlers
-	userHandler := handlers.NewActivityHandler(userService)
+	activityHandler := handlers.NewActivityHandler(activityService)
+
+	// --- INICIO DEL CAMBIO ---
+	// Inicializar el nuevo handler de usuario
+	userHandler := handlers.NewUserHandler(userService)
+	// --- FIN DEL CAMBIO ---
 
 	cors := config.CorsNew()
 
@@ -55,7 +70,10 @@ func main() {
 	router.Use(cors)
 
 	// Register routes
-	routes.RegisterPublicEndpoints(router, userHandler)
+	// --- INICIO DEL CAMBIO ---
+	// Pasar ambos handlers a la función de registro de rutas
+	routes.RegisterPublicEndpoints(router, activityHandler, userHandler)
+	// --- FIN DEL CAMBIO ---
 
 	server := serve.NewServer(log.Logger, router, config)
 	server.Serve()
