@@ -41,12 +41,18 @@ func (r *Activity) GetAllActivitiesByUser(idUsuario int) ([]*entities.Activity, 
 }
 
 func (r *Activity) Create(activity *entities.Activity) error {
-	_, err := r.Insert(
-		"INSERT INTO actividades (tipo, distancia_km, duracion_min, fecha, id_usuario) VALUES ($1, $2, $3, $4, $5)",
-		activity.Tipo, activity.DistanciaKm, activity.DuracionMin, activity.Fecha, activity.IdUsuaio,
-	)
+    query := "INSERT INTO actividades (tipo, distancia_km, duracion_min, fecha, id_usuario) VALUES ($1, $2, $3, $4, $5) RETURNING id_actividad"
 
-	return err
+    var insertedID int
+
+    err := r.DB.QueryRow(query, activity.Tipo, activity.DistanciaKm, activity.DuracionMin, activity.Fecha, activity.IdUsuaio).Scan(&insertedID)
+
+    if err != nil {
+        return err
+    }
+
+    activity.IdActividad = insertedID
+    return nil
 }
 
 func (r *Activity) Update(activity *entities.Activity) error {

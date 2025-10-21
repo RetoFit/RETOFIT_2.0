@@ -9,6 +9,7 @@ import {
   Footprints,
   Dumbbell,
   Timer,
+  Star,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,11 +28,9 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
-import { getCurrentUser, getAchievementsProgress } from '@/lib/api';
+import { getCurrentUser, getAchievementsProgress, getUserPoints } from '@/lib/api';
 
-// ¡Ya no importamos datos de prueba!
-
-// Definimos los tipos de datos que esperamos de la API
+// (Las interfaces no cambian)
 interface UserData {
   is_profile_complete: boolean;
   id: number;
@@ -40,8 +39,8 @@ interface UserData {
 
 interface UserApiResponse {
   is_profile_complete: boolean;
-  id_usuario: number; // <--- Cambiado de 'id'
-  nombre: string;     // <--- Cambiado de 'username'
+  id_usuario: number; 
+  nombre: string;     
 }
 
 interface ChallengeData {
@@ -51,35 +50,38 @@ interface ChallengeData {
   progreso_actual: number;
   porcentaje_completado: number;
   obtenido: boolean;
-  tipo_regla: string; // "SUMA_DISTANCIA", "CONTEO_ACTIVIDADES", etc.
+  tipo_regla: string; 
 }
+
 
 export default function Dashboard() {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<{ id: number; username: string; is_profile_complete: boolean; } | null>(null);
   const [myChallenges, setMyChallenges] = useState<ChallengeData[]>([]);
+  const [totalPoints, setTotalPoints] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // 1. Obtener los datos del usuario actual desde el user-service
         const userData = await getCurrentUser();
-        // El backend ahora devuelve 'username' en lugar de 'nombre'
         setCurrentUser({
           id: userData.id_usuario,
           username: userData.nombre,
           is_profile_complete: userData.is_profile_complete
         });
 
-        // 2. Con el ID del usuario, obtener el progreso desde el gamification-service
-        const challengesData = await getAchievementsProgress(userData.id_usuario);
-        setMyChallenges(challengesData)
+        const [challengesData, pointsData] = await Promise.all([
+          getAchievementsProgress(userData.id_usuario),
+          getUserPoints(userData.id_usuario)
+        ]);
+
+        setMyChallenges(challengesData);
+        setTotalPoints(pointsData.puntos_totales);
 
       } catch (err: any) {
         setError(err.message);
-        // La lógica de redirección ya está en fetchWithToken
       } finally {
         setLoading(false);
       }
@@ -88,22 +90,20 @@ export default function Dashboard() {
     fetchData();
   }, [router]);
 
-  // Mapea el tipo de regla de tu backend al tipo de ícono del frontend
+  // --- FUNCIÓN DE ICONOS ACTUALIZADA ---
   const getIcon = (ruleType: string) => {
     const className = "h-4 w-4 text-muted-foreground";
-    if (ruleType.includes('DISTANCIA')) {
-      return <Timer className={className} />;
-    }
-    if (ruleType.includes('ACTIVIDADES')) {
-      return <Footprints className={className} />;
-    }
-    // Añade más casos si tienes otros tipos de reglas
+    if (ruleType.includes('DISTANCIA')) return <Timer className={className} />;
+    if (ruleType.includes('ACTIVIDADES')) return <Footprints className={className} />;
+    if (ruleType.includes('PUNTOS')) return <Star className={className} />; // <-- Añadido
     return <Dumbbell className={className} />;
   };
   
+  // --- FUNCIÓN DE UNIDADES ACTUALIZADA ---
   const getUnit = (ruleType: string) => {
     if (ruleType.includes('DISTANCIA')) return 'km';
     if (ruleType.includes('ACTIVIDADES')) return 'actividades';
+    if (ruleType.includes('PUNTOS')) return 'puntos'; // <-- Añadido
     return 'unidades';
   }
 
@@ -125,11 +125,12 @@ export default function Dashboard() {
           ¡Bienvenido de nuevo, {currentUser?.username}!
         </h1>
       </div>
+      {/* ... (Las cards de resumen no cambian) ... */}
       <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-2">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Retos Activos
+              Logros Activos
             </CardTitle>
             <Trophy className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -143,7 +144,7 @@ export default function Dashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Retos Completados
+              Logros Completados
             </CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -154,10 +155,24 @@ export default function Dashboard() {
             </p>
           </CardContent>
         </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Mis Puntos
+            </CardTitle>
+            <Star className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalPoints.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">
+              Ganados por tus actividades
+            </p>
+          </CardContent>
+        </Card>
       </div>
       <Card>
         <CardHeader>
-          <CardTitle>Mis Retos Activos</CardTitle>
+          <CardTitle>Mis Logros Activos</CardTitle>
           <CardDescription>
             Este es un vistazo a tu progreso actual.
           </CardDescription>
@@ -187,13 +202,16 @@ export default function Dashboard() {
                     {getIcon(challenge.tipo_regla)}
                   </TableCell>
                   <TableCell>
+                    {/* ===== INICIO DEL CAMBIO IMPORTANTE ===== */}
                     <div className="flex flex-col gap-2">
                       <Progress value={challenge.porcentaje_completado} aria-label={`${challenge.porcentaje_completado.toFixed(0)}% completado`} />
-                      <span className="text-xs text-muted-foreground">{challenge.porcentaje_completado.toFixed(0)}%</span>
+                      <span className="text-xs text-muted-foreground">
+                        {challenge.progreso_actual.toLocaleString()} / {challenge.meta.toLocaleString()} {getUnit(challenge.tipo_regla)} ({challenge.porcentaje_completado.toFixed(0)}%)
+                      </span>
                     </div>
+                    {/* ===== FIN DEL CAMBIO ===== */}
                   </TableCell>
                   <TableCell>
-                    {/* El enlace debe ajustarse si la estructura de tu URL cambia */}
                     <Link href={`/dashboard/challenges/${challenge.id}`}>
                       <Button size="sm" variant="outline">
                         Ver

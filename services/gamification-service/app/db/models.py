@@ -1,22 +1,20 @@
 # services/gamification-service/app/db/models.py
-from pydantic import BaseModel, Field
+
+from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
 
-# --- Schemas de Pydantic (ahora son nuestros modelos principales) ---
-
+# --- MODELO CORRECTO Y DEFINITIVO ---
+# Esta es la plantilla que DEBE coincidir con lo que envía el servicio de Go.
+# Acepta todos los campos de la actividad.
 class ProcessActivityRequest(BaseModel):
     user_id: int
-    points: int
+    tipo: str
+    distancia_km: float
+    duracion_min: int
+    fecha: datetime
 
-class LogroResponse(BaseModel):
-    nombre: str
-    descripcion: Optional[str]
-    fecha_obtencion: datetime
-
-    class Config:
-        from_attributes = True
-
+# Este modelo es para las respuestas al frontend y está correcto.
 class AchievementProgressResponse(BaseModel):
     id: str
     nombre: str
@@ -25,5 +23,5 @@ class AchievementProgressResponse(BaseModel):
     progreso_actual: float
     porcentaje_completado: float
     obtenido: bool
-    fecha_obtenido: Optional[datetime]
+    fecha_obtenido: Optional[datetime] = None
     tipo_regla: str
