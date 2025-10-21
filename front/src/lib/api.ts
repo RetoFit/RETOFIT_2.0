@@ -2,6 +2,7 @@ const AUTH_API = process.env.NEXT_PUBLIC_AUTH_API_URL;
 const USER_API = process.env.NEXT_PUBLIC_USER_API_URL;
 const GAMIFICATION_API = process.env.NEXT_PUBLIC_GAMIFICATION_API_URL;
 const POSTS_API = process.env.NEXT_PUBLIC_POSTS_API_URL;
+const PHYSICAL_ACTIVITIES_API = process.env.NEXT_PUBLIC_PHYSICAL_ACTIVITIES_API_URL;
 
 // --- Funciones para el Servicio de Autenticación ---
 
@@ -131,6 +132,10 @@ export async function getAchievementsProgress(userId: number) {
   return fetchWithToken(`${GAMIFICATION_API}/users/${userId}/achievements-progress`);
 }
 
+export async function getUserPoints(userId: number): Promise<{ puntos_totales: number }> {
+  return fetchWithToken(`${GAMIFICATION_API}/users/${userId}/points`);
+}
+
 // --- Functions for the Posts Service ---
 
 export async function getPosts(page = 1, limit = 10) {
@@ -203,4 +208,23 @@ export async function toggleLike(postId: number) {
 
 export async function getLikes(postId: number) {
   return fetchWithToken(`${POSTS_API}/posts/${postId}/likes`);
+}
+
+
+export async function getMyActivities(userId: number) {
+  // Nota: El token ya está incluido en fetchWithToken
+  return fetchWithToken(`${PHYSICAL_ACTIVITIES_API}/activities/users/${userId}/activities`);
+}
+
+export async function createActivity(userId: number, activityData: {
+  tipo: string;
+  distancia_km: number;
+  duracion_min: number;
+  fecha: string; // Formato ISO 8601: "2025-10-21T10:00:00Z"
+}) {
+  return fetchWithToken(`${PHYSICAL_ACTIVITIES_API}/activities/users/${userId}/activities`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(activityData),
+  });
 }
