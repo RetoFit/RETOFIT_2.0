@@ -32,7 +32,7 @@ export default function AuthLayout({
           <Link href="/" className="mb-4 flex items-center gap-2">
             <Logo className="h-8 w-8 text-primary" />
             <span className="text-2xl font-bold tracking-tight text-white">
-              Fitness Frontier
+              Reto-Fit
             </span>
           </Link>
           <h1 className="text-4xl font-bold">Push Your Limits</h1>

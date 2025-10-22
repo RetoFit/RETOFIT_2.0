@@ -11,7 +11,7 @@ const ptSans = PT_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'Fitness Frontier',
+  title: 'Reto-fit',
   description: 'Your ultimate fitness challenge companion',
 };
 
