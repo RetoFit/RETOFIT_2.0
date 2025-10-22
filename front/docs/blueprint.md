@@ -1,4 +1,4 @@
-# **App Name**: Fitness Frontier
+# **App Name**: Reto-Fit
 
 ## Core Features:
 

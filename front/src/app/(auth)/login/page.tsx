@@ -124,7 +124,7 @@ export default function LoginPage() {
         <CardHeader>
           <div className="flex items-center justify-center gap-2 mb-4">
             <Logo className="h-8 w-8 text-primary" />
-            <CardTitle className="text-2xl font-headline">Fitness Frontier</CardTitle>
+            <CardTitle className="text-2xl font-headline">Reto-Fit</CardTitle>
           </div>
           <CardDescription>
             Ingresa tu correo para acceder a tu cuenta
