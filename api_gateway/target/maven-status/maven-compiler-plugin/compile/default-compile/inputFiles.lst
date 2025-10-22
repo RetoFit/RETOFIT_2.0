@@ -1,3 +1,3 @@
 /home/anderson/Documents/2025-2S/Arquitectura_de_software/RETOFIT_2.0/api_gateway/src/main/java/com/example/api_gateway/config/CorsConfig.java
 /home/anderson/Documents/2025-2S/Arquitectura_de_software/RETOFIT_2.0/api_gateway/src/main/java/com/example/api_gateway/Application.java
-/home/anderson/Documents/2025-2S/Arquitectura_de_software/RETOFIT_2.0/api_gateway/src/main/java/com/example/api_gateway/filter/LoggingAndAuthFilter.java
+/home/anderson/Documents/2025-2S/Arquitectura_de_software/RETOFIT_2.0/api_gateway/src/main/java/com/example/api_gateway/filter/LoggingFilter.java

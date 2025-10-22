@@ -48,6 +48,10 @@ async def create_user_profile(user_data: UserCreate, db: Session = Depends(get_d
 @router.get("/me", response_model=UserProfileResponse)
 async def get_current_user(email: str = Depends(get_current_user_email), db: Session = Depends(get_db)):
     user = db.query(User).filter(User.correo == email).first()
+    print()
+    print(f"--- BUSCANDO USUARIO CON EMAIL: {email} ---")
+    print(f"--- USUARIO ENCONTRADO: {user} ---")
+    print
     if user is None:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     

@@ -39,6 +39,18 @@ const navItems = [
     label: 'Profile',
     icon: UserCircle,
   },
+  {
+    name: 'Actividades',
+    label: 'Registrar Actividad',
+    href: '/dashboard/activities',
+    icon: Dumbbell,
+  },
+  { 
+    name: 'Logros',
+    label: 'Logros',
+    href: '/dashboard/achievements',
+    icon: Footprints,
+  },
 ];
 
 export function DashboardNav() {
