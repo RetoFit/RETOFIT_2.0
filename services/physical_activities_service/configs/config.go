@@ -26,9 +26,10 @@ type databaseConfig struct {
 }
 
 func NewConfig() *Config {
-	err := godotenv.Load("configs/dev.env")
+	err := godotenv.Load("./configs/dev.env")
 
 	if err != nil {
+		fmt.Print(err)
 		panic("Error loading .env file")
 	}
 
@@ -67,6 +68,7 @@ func (conf *Config) CorsNew() gin.HandlerFunc {
 		ExposeHeaders:    []string{constants.Headers.ContentLength},
 		AllowCredentials: true,
 		AllowOriginFunc: func(origin string) bool {
+			fmt.Println(origin)
 			return origin == allowedOrigin
 		},
 		MaxAge: constants.MaxAge,
