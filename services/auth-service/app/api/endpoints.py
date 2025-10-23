@@ -22,7 +22,12 @@ router = APIRouter()
 security = HTTPBearer()
 
 
+<<<<<<< HEAD
 USER_SERVICE_URL = "http://user-service:8000"
+=======
+USER_SERVICE_URL = "http://127.0.0.1:8004"
+PHYSICAL_ACTIVITIES_SERVICE_URL = "http://localhost:8000"
+>>>>>>> Retofit2.1
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 FRONTEND_URL = os.getenv("FRONTEND_URL")
@@ -132,11 +137,19 @@ async def register_user(request: UserRegistrationRequest, db: Session = Depends(
             }
             response = await client.post(f"{USER_SERVICE_URL}/users/", json=user_profile_data)
             response.raise_for_status() # Lanza un error si la solicitud falla
+            # 2. Notificar a physical-activities-service (NUEVO)
+            # Este servicio solo necesita el ID para crear la referencia.
+            activity_user_data = {"id_usuario": user.id_usuario}
+            # El endpoint podría ser '/users' o similar. Debes crearlo en el servicio de Go.
+            response_activities = await client.post(f"{PHYSICAL_ACTIVITIES_SERVICE_URL}/users", json=activity_user_data)
+            response_activities.raise_for_status()
+            
+    
     except httpx.RequestError as e:
         # En un sistema real, aquí manejarías el error (e.g., reintentos, logs)
         # Por ahora, lanzamos una excepción para saber que algo falló
         print(f"Error al notificar al user-service: {e}")
-        raise HTTPException(status_code=500, detail="Error al crear el perfil de usuario.")
+        raise HTTPException(status_code=500, detail=f"Error al comunicar con servicios internos: {e.url}")
 
     # En una arquitectura real, aquí podrías emitir un evento 'user_created'
     return {"status": "success", "message": "Usuario registrado correctamente", "user_id": user.id_usuario}
@@ -147,8 +160,20 @@ async def login_user(request: LoginRequest, db: Session = Depends(get_db)):
     if not user or not verify_password(request.password, user.contraseña):
         raise HTTPException(status_code=401, detail="Credenciales incorrectas")
 
-    access_token = create_access_token(data={"sub": user.correo}, role=user.rol)
-    return {"access_token": access_token, "token_type": "bearer"}
+    access_token = create_access_token(data={"sub": user.correo, "id": user.id_usuario}, role=user.rol)
+    
+    # --- CAMBIO SUGERIDO ---
+    # Devuelve el token Y los datos del usuario
+    return {
+        "access_token": access_token, 
+        "token_type": "bearer",
+        "user": {
+            "id": user.id_usuario, # Asegúrate de que este sea el nombre correcto del campo ID
+            "name": user.nombre,
+            "email": user.correo,
+            "role": user.rol
+        }
+    }
 
 @router.post("/login/admin")
 async def login_admin_user(request: LoginRequest, db: Session = Depends(get_db)):
@@ -159,7 +184,7 @@ async def login_admin_user(request: LoginRequest, db: Session = Depends(get_db))
     if user.rol != "admin":
         raise HTTPException(status_code=403, detail="Credenciales incorrectas")
 
-    access_token = create_access_token(data={"sub": user.correo}, role=user.rol)
+    access_token = create_access_token(data={"sub": user.correo, "id": user.id_usuario}, role=user.rol)
     return {"access_token": access_token, "token_type": "bearer"}
 
 @router.post("/social-login")
@@ -194,7 +219,7 @@ async def social_login(request: SocialLoginRequest, db: Session = Depends(get_db
             db.refresh(user)
 
     # 3. Crear y devolver el token de acceso de nuestra aplicación
-    access_token = create_access_token(data={"sub": user.correo}, role=user.rol)
+    access_token = create_access_token(data={"sub": user.correo, "id": user.id_usuario}, role=user.rol)
     return {"access_token": access_token, "token_type": "bearer"}
 
 

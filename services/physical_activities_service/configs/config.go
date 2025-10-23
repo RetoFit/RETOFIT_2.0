@@ -58,8 +58,12 @@ func (conf *Config) CorsNew() gin.HandlerFunc {
 	allowedOrigin := GetEnvOrPanic(constants.EnvKeys.CorsAllowedOrigin)
 
 	return cors.New(cors.Config{
-		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete},
-		AllowHeaders:     []string{constants.Headers.Origin},
+		AllowMethods: []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete, http.MethodOptions}, // Añadido OPTIONS
+		AllowHeaders: []string{
+			constants.Headers.Origin,
+			"Content-Type",
+			"Authorization", // Cabecera para el token JWT
+		},
 		ExposeHeaders:    []string{constants.Headers.ContentLength},
 		AllowCredentials: true,
 		AllowOriginFunc: func(origin string) bool {

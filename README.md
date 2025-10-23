@@ -63,6 +63,8 @@ Asegúrate de tener instalado lo siguiente:
 -   [Node.js](https://nodejs.org/) (versión 18 o superior)
 -   [Python](https://www.python.org/downloads/) (versión 3.9 o superior)
 -   `npm` (se instala con Node.js) o `yarn`
+-   PHP (versión 8.0 o superior)
+-   Composer (gestor de dependencias para PHP)
 
 ### 1. Clonar el Repositorio
 
@@ -161,19 +163,40 @@ uvicorn app.main:app --reload --port 8004
 ```
 ✅ El servicio de usuarios estará escuchando en **[http://localhost:8004](http://localhost:8004)**.
 
+
+# 1. Navega a la carpeta del servicio de administración
+cd services/admin-service
+
+# 2. Instala las dependencias del proyecto con Composer.
+# Este comando lee el archivo `composer.json` y descarga todas las librerías
+# necesarias (como Slim Framework y Guzzle) en la carpeta `vendor/`.
+composer install
+
+# 3. Inicia el servidor de desarrollo integrado de PHP.
+# El servicio se ejecutará en el puerto 8006. El flag `-t public` es
+# importante porque establece el directorio `public/` como la raíz del
+
+php -S localhost:8006 -t public
+
+
+Este patrón de comunicación se realiza mediante **Guzzle**, un cliente HTTP para PHP. Esto permite que los microservicios, aunque escritos en diferentes lenguajes, colaboren entre sí de forma transparente.
+
+
 ---
 
 ## 📁 Estructura del Proyecto
 
 ```
 RETOFIT_2.0/
-├── front/               # Código fuente del Frontend (Next.js)
+├── front/                     # Código fuente del Frontend (Next.js)
 │   ├── components/
 │   ├── pages/
 │   └── ...
-└── services/            # Contenedor de todos los microservicios
-    ├── activities-service/
-    ├── auth-service/
-    ├── gamification-service/
-    └── user-service/
+└── services/                  # Contenedor de todos los microservicios
+    ├── activities-service/    # (Python) Servicio de Actividades
+    ├── auth-service/          # (Python) Servicio de Autenticación
+    ├── admin-service/         # (PHP) Servicio de Administración
+    ├── gamification-service/  # (Python) Servicio de Gamificación
+    └── user-service/          # (Python) Servicio de Usuarios
+
 ```

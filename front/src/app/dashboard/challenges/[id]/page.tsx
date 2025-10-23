@@ -1,14 +1,9 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
-import {
-  challenges,
-  progressLogs,
-  users,
-  type Challenge,
-} from '@/lib/data';
-import { Badge } from '@/components/ui/badge';
+// Ya no importamos 'getLeaderboardData' ni 'LeaderboardEntry'
+import { getChallengeById } from '@/lib/api'; 
+import { type Challenge } from '@/lib/data';
 import { Footprints, Dumbbell, Timer, Users, Target } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
 import {
   Card,
   CardContent,
@@ -16,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Leaderboard } from '@/components/leaderboard';
+// Ya no importamos 'Leaderboard'
 import { ChallengeProgress } from '@/components/challenge-progress';
 
 type ChallengePageProps = {
@@ -25,11 +20,7 @@ type ChallengePageProps = {
   };
 };
 
-const getChallengeData = (id: string): Challenge | undefined => {
-  return challenges.find((c) => c.id === id);
-};
-
-const getIcon = (type: 'steps' | 'distance' | 'time') => {
+const getIcon = (type: 'steps' | 'distance' | 'time' | string) => {
   const className = 'h-5 w-5 text-primary';
   switch (type) {
     case 'steps':
@@ -38,39 +29,28 @@ const getIcon = (type: 'steps' | 'distance' | 'time') => {
       return <Timer className={className} />;
     case 'time':
       return <Dumbbell className={className} />;
+    default:
+      return <Target className={className} />;
   }
 };
 
-// Mock current user
-const currentUser = users[0];
-
-export default function ChallengePage({ params }: ChallengePageProps) {
-  const challenge = getChallengeData(params.id);
+export default async function ChallengePage({ params }: ChallengePageProps) {
+  // 1. Obtenemos solo el reto, ya no en paralelo
+  const challenge = await getChallengeById(params.id);
 
   if (!challenge) {
     notFound();
   }
 
-  const userProgress = progressLogs.find(
-    (p) => p.challengeId === challenge.id && p.userId === currentUser.id
-  );
+  // Pasamos solo el reto al componente JSX
+  return <ChallengePageContent challenge={challenge} />;
+}
 
-  if (!userProgress) {
-    // In a real app, you might create a progress entry here or handle it differently
-    // For this mock, we'll assume a user joining a challenge has a progress log.
-    // Let's create one on the fly if not found.
-    progressLogs.push({
-      challengeId: challenge.id,
-      userId: currentUser.id,
-      progress: 0,
-      date: new Date(),
-    });
-    return ChallengePage({ params });
-  }
-
+// Este componente ahora solo recibe 'challenge'
+function ChallengePageContent({ challenge }: { challenge: Challenge }) {
   return (
     <div className="flex flex-col gap-8">
-      {/* Header section */}
+      {/* Header section (sin cambios) */}
       <div className="relative h-64 w-full rounded-lg overflow-hidden">
         <Image
           src={challenge.image.imageUrl}
@@ -90,13 +70,16 @@ export default function ChallengePage({ params }: ChallengePageProps) {
         </div>
       </div>
 
-      {/* Main content grid */}
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        {/* Left Column: Progress and Details */}
-        <div className="lg:col-span-2 space-y-8">
+      {/* Main content grid: 
+        Quitamos 'lg:grid-cols-3' y lo cambiamos para que ocupe el centro 
+      */}
+      <div className="grid grid-cols-1 gap-8 lg:max-w-4xl lg:mx-auto lg:w-full">
+        {/* Left Column: Progress and Details 
+          Cambiamos 'lg:col-span-2' para que ocupe todo el espacio
+        */}
+        <div className="lg:col-span-1 space-y-8">
           <ChallengeProgress
             challenge={challenge}
-            initialProgress={userProgress}
           />
           <Card>
             <CardHeader>
@@ -135,18 +118,9 @@ export default function ChallengePage({ params }: ChallengePageProps) {
           </Card>
         </div>
 
-        {/* Right Column: Leaderboard */}
-        <div className="lg:col-span-1">
-          <Card>
-            <CardHeader>
-              <CardTitle>Leaderboard</CardTitle>
-              <CardDescription>See where you stand among the competition.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Leaderboard challenge={challenge} />
-            </CardContent>
-          </Card>
-        </div>
+        {/* Right Column: Leaderboard
+          ELIMINAMOS TODA ESTA SECCIÓN
+        */}
       </div>
     </div>
   );

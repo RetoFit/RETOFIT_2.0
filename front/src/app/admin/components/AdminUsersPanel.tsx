@@ -28,10 +28,9 @@ interface UserActionLinks {
 
 interface User {
   id: number;
-  name: string;
   email: string;
   status: 'active' | 'suspended';
-  last_login: string;
+  created_at: string; // Cambiado de last_login a created_at para coincidir con la API
   _actions: UserActionLinks;
 }
 
@@ -130,8 +129,11 @@ export default function AdminUsersPanel() {
 
   const handleCreateUser = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const newUser = Object.fromEntries(formData.entries()) as { name: string, email: string, password?: string };
+    const formData = new FormData(event.currentTarget) as any;
+    const formDataObject = Object.fromEntries(formData.entries()) as { email: string, password?: string };
+    // Derivamos un 'name' a partir del email, ya que el backend lo requiere.
+    const nameFromEmail = formDataObject.email.split('@')[0];
+    const newUser = { ...formDataObject, name: nameFromEmail };
 
     try {
       await createAdminUser(newUser);
@@ -167,8 +169,8 @@ export default function AdminUsersPanel() {
         <table className="min-w-full bg-gray-800">
           <thead>
             <tr>
-              <th className="py-2 px-4 text-left">Nombre</th>
               <th className="py-2 px-4 text-left">Email</th>
+              <th className="py-2 px-4 text-left">Registrado</th>
               <th className="py-2 px-4 text-left">Estado</th>
               <th className="py-2 px-4 text-left">Acciones</th>
             </tr>
@@ -176,8 +178,8 @@ export default function AdminUsersPanel() {
           <tbody>
             {data.users.map((user) => (
               <tr key={user.id} className="border-t border-gray-700 hover:bg-gray-700">
-                <td className="py-2 px-4">{user.name}</td>
-                <td className="py-2 px-4">{user.email}</td>
+                <td className="py-2 px-4 text-blue-400">{user.email || '—'}</td>
+                <td className="py-2 px-4 text-gray-400 text-sm">{new Date(user.created_at).toLocaleDateString('es-ES')}</td>
                 <td className="py-2 px-4">
                   <span className={`px-2 py-1 rounded-full text-xs font-semibold ${user.status === 'active' ? 'bg-green-500 text-black' : 'bg-yellow-500 text-black'}`}>
                     {user.status}
@@ -187,19 +189,13 @@ export default function AdminUsersPanel() {
                   {user.status === 'active' && (
                     <AlertDialog>
                       <AlertDialogTrigger asChild><Button variant="outline" size="sm" className="border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black">Suspender</Button></AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader><AlertDialogTitle>¿Seguro que quieres suspender a {user.name}?</AlertDialogTitle></AlertDialogHeader>
-                        <AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => handleStatusChange(user.id, 'suspended')}>Suspender</AlertDialogAction></AlertDialogFooter>
-                      </AlertDialogContent>
+                      <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>¿Seguro que quieres suspender a {user.email}?</AlertDialogTitle></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => handleStatusChange(user.id, 'suspended')}>Suspender</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
                     </AlertDialog>
                   )}
                   {user.status === 'suspended' && (
                     <AlertDialog>
                       <AlertDialogTrigger asChild><Button variant="outline" size="sm" className="border-green-500 text-green-500 hover:bg-green-500 hover:text-black">Reactivar</Button></AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader><AlertDialogTitle>¿Seguro que quieres reactivar a {user.name}?</AlertDialogTitle></AlertDialogHeader>
-                        <AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => handleStatusChange(user.id, 'active')}>Reactivar</AlertDialogAction></AlertDialogFooter>
-                      </AlertDialogContent>
+                      <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>¿Seguro que quieres reactivar a {user.email}?</AlertDialogTitle></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => handleStatusChange(user.id, 'active')}>Reactivar</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
                     </AlertDialog>
                   )}
                   <AlertDialog>
@@ -208,14 +204,14 @@ export default function AdminUsersPanel() {
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
+                        <AlertDialogTitle>¿Estás seguro de eliminar a este usuario?</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Esta acción es irreversible y eliminará permanentemente al usuario <span className="font-bold">{user.name}</span>.
+                          Esta acción es irreversible y eliminará permanentemente al usuario <span className="font-bold">{user.email}</span>.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleDeleteUser(user.id, user.name)}>Eliminar Usuario</AlertDialogAction>
+                        <AlertDialogAction onClick={() => handleDeleteUser(user.id, user.email)}>Eliminar Usuario</AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
@@ -241,10 +237,6 @@ function CreateUserDialog({ isOpen, onOpenChange, onSubmit }: { isOpen: boolean,
           <DialogTitle>Crear Nuevo Usuario</DialogTitle>
         </DialogHeader>
         <form onSubmit={onSubmit} className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">Nombre</Label>
-            <Input id="name" name="name" className="col-span-3 bg-gray-700 border-gray-600" required />
-          </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="email" className="text-right">Email</Label>
             <Input id="email" name="email" type="email" className="col-span-3 bg-gray-700 border-gray-600" required />

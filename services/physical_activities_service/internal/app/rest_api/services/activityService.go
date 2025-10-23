@@ -1,8 +1,12 @@
 package services
 
 import (
+	"bytes"
 	"database/sql"
+	"encoding/json"
 	"errors"
+	"fmt"
+	"log"
 	"net/http"
 
 	"RetoFit-App/services/physical_activities_service/internal/app/rest_api/models"
@@ -86,14 +90,50 @@ func (us *Activity) CreateActivity(userId int, createActivityRequest *dtos.Creat
 	activityResponse := &dtos.CreateActivityResponse{}
 
 	activity := createActivityRequest.ToActivity()
+	activity.IdUsuaio = userId
+
+	fmt.Println("CreateActivtyRequest: $1, idUser: $2", activity, userId)
 
 	err := us.ActivityRepo.Create(activity)
 	if err != nil {
+		fmt.Println("Errrrrooooooorrr: al crear la actividad en el repositorio.")
 		return nil, &models.ErrorResponse{
 			Code:    http.StatusInternalServerError,
 			Message: "Failed to create Activity",
 		}
 	}
+
+	go func(act *dtos.CreateActivityRequest, uId int) {
+		// Preparamos el cuerpo de la petición para el gamification-service
+		gamificationRequest := map[string]interface{}{
+			"user_id":      uId,
+			"tipo":         act.Tipo,
+			"distancia_km": act.DistanciaKm,
+			"duracion_min": act.DuracionMin,
+			"fecha":        act.Fecha,
+		}
+		jsonData, err := json.Marshal(gamificationRequest)
+		if err != nil {
+			fmt.Println("Errrrrooooooorrr: al crear el JSON para el servicio de gamificación.")
+			log.Printf("Error creating JSON for gamification service: %v", err)
+			return
+		}
+
+		// URL del servicio de gamificación (¡debería ser una variable de entorno!)
+		gamificationURL := "http://localhost:8003/gamification/process-activity"
+		resp, err := http.Post(gamificationURL, "application/json", bytes.NewBuffer(jsonData))
+		if err != nil {
+			log.Printf("Error calling gamification service: %v", err)
+			return
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			log.Printf("Gamification service returned a non-OK status: %s", resp.Status)
+		} else {
+			log.Printf("Successfully notified gamification service for user %d", uId)
+		}
+	}(createActivityRequest, userId)
 
 	return activityResponse.FromActivity(activity), nil
 }

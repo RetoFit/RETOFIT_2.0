@@ -15,7 +15,8 @@ export type Challenge = {
   target: number;
   unit: 'steps' | 'km' | 'hours';
   participants: string[]; // array of user IDs
-  image: ImagePlaceholder;
+  image?: any; // Hacer el `image` estático opcional
+  image_url?: string | null; // Añadir el campo que viene de la API
 };
 
 export type ProgressLog = {
