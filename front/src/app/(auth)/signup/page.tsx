@@ -235,7 +235,7 @@ export default function SignupPage() {
         <CardHeader className="text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Logo className="h-8 w-8 text-primary" />
-            <CardTitle className="text-2xl font-headline">Fitness Frontier</CardTitle>
+            <CardTitle className="text-2xl font-headline">Reto-Fit</CardTitle>
           </div>
           <CardDescription className="text-lg">
             Crea una cuenta para comenzar tu viaje de fitness
@@ -432,25 +432,25 @@ export default function SignupPage() {
                       <CardContent className="grid gap-4">
             <div className="text-sm text-muted-foreground space-y-4">
               <p>
-                Fitness Frontier es una plataforma enfocada en el bienestar y la superación personal, 
+                Reto-Fites una plataforma enfocada en el bienestar y la superación personal, 
                 donde los usuarios pueden participar en retos, registrar su progreso y compartir logros 
                 relacionados con la actividad física y hábitos saludables.
               </p>
               <p>
                 Cada usuario es responsable del contenido que publica, así como de su participación en 
-                los retos. Fitness Frontier no se hace responsable de lesiones, daños o perjuicios que 
+                los retos. Reto-Fit no se hace responsable de lesiones, daños o perjuicios que 
                 puedan derivarse del uso inadecuado de la aplicación o de la realización de actividades 
                 físicas sin la debida precaución o supervisión profesional.
               </p>
               <p>
-                Fitness Frontier está diseñada para motivar y acompañar el progreso personal, no para 
+                Reto-Fit está diseñada para motivar y acompañar el progreso personal, no para 
                 sustituir asesorías médicas o entrenamientos profesionales. Se recomienda a los usuarios 
                 consultar con un especialista antes de iniciar cualquier programa de ejercicio.
               </p>
               <p>
-                La plataforma y sus contenidos son propiedad de Fitness Frontier. Cualquier uso no 
+                La plataforma y sus contenidos son propiedad de Reto-Fit. Cualquier uso no 
                 autorizado, copia o distribución de los materiales está estrictamente prohibido. 
-                Fitness Frontier se reserva el derecho de modificar los servicios o los términos 
+                Reto-Fit se reserva el derecho de modificar los servicios o los términos 
                 de uso en cualquier momento, notificando a los usuarios registrados.
               </p>
             </div>

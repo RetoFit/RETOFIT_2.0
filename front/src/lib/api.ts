@@ -3,7 +3,9 @@ const USER_API = process.env.NEXT_PUBLIC_USER_API_URL;
 const GAMIFICATION_API = process.env.NEXT_PUBLIC_GAMIFICATION_API_URL;
 const POSTS_API = process.env.NEXT_PUBLIC_POSTS_API_URL;
 const PHYSICAL_ACTIVITIES_API = process.env.NEXT_PUBLIC_PHYSICAL_ACTIVITIES_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8006/admin';
 
+import type { Challenge, ProgressLog } from '@/lib/data';
 // --- Funciones para el Servicio de Autenticación ---
 
 export async function loginUser(email: string, password: string) {
@@ -227,4 +229,104 @@ export async function createActivity(userId: number, activityData: {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(activityData),
   });
+}
+
+// --- Funciones para el Servicio de Administración ---
+
+export async function getChallenges() {
+  // Hacemos una llamada fetch normal porque este endpoint es público
+  const response = await fetch(`${API_URL}/challenges`);
+
+  if (!response.ok) {
+    // Si hay un error en la respuesta de la API, lo lanzamos
+    throw new Error('Failed to fetch challenges');
+  }
+
+  return response.json();
+}
+
+export async function getChallengeById(id: string): Promise<Challenge | null> {
+  try {
+    const res = await fetch(`${API_URL}/challenges/${id}`);
+
+    if (!res.ok) {
+      if (res.status === 404) {
+        return null; // Reto no encontrado
+      }
+      throw new Error('Error al obtener los datos del reto');
+    }
+
+    // La API de PHP ya debería devolver los datos en el formato correcto (ver paso 1)
+    const data = await res.json();
+    return data as Challenge;
+
+  } catch (error) {
+    console.error('getChallengeById Error:', error);
+    return null;
+  }
+}
+
+export async function getUserProgress(
+  challengeId: string,
+  userId: string
+): Promise<ProgressLog> {
+  try {
+    const res = await fetch(`${API_URL}/challenges/${challengeId}/progress/${userId}`);
+    
+    if (!res.ok) {
+      throw new Error('Error al obtener el progreso del usuario');
+    }
+    
+    const data = await res.json();
+    
+    // La API devuelve un objeto con { challenge_id, user_id, progress }
+    // Lo adaptamos al tipo ProgressLog que espera el frontend
+    return {
+      challengeId: data.challenge_id,
+      userId: data.user_id,
+      progress: data.progress,
+      date: data.updated_at ? new Date(data.updated_at) : new Date(),
+    };
+
+  } catch (error) {
+    console.error('getUserProgress Error:', error);
+    // Si falla (ej. 404 o 500), devolvemos un estado por defecto
+    // La ruta GET ya devuelve un 0 por defecto si no lo encuentra, 
+    // pero esto es una doble seguridad.
+    return {
+      challengeId: challengeId,
+      userId: userId,
+      progress: 0,
+      date: new Date(),
+    };
+  }
+}
+
+/**
+ * Guarda (actualiza/crea) el progreso de un usuario.
+ */
+export async function logUserProgress(
+  challengeId: string,
+  userId: string,
+  newProgress: number
+): Promise<{ ok: boolean; data?: ProgressLog }> {
+  try {
+    const res = await fetch(`${API_URL}/challenges/${challengeId}/progress/${userId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ progress: newProgress }),
+    });
+
+    if (!res.ok) {
+      throw new Error('Error al guardar el progreso');
+    }
+    
+    const data = await res.json();
+    return { ok: true, data };
+  } catch (error) {
+    console.error('logUserProgress Error:', error);
+    return { ok: false };
+  }
 }

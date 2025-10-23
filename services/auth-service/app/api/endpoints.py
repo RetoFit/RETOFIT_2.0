@@ -155,8 +155,20 @@ async def login_user(request: LoginRequest, db: Session = Depends(get_db)):
     if not user or not verify_password(request.password, user.contraseña):
         raise HTTPException(status_code=401, detail="Credenciales incorrectas")
 
-    access_token = create_access_token(data={"sub": user.correo}, role=user.rol)
-    return {"access_token": access_token, "token_type": "bearer"}
+    access_token = create_access_token(data={"sub": user.correo, "id": user.id_usuario}, role=user.rol)
+    
+    # --- CAMBIO SUGERIDO ---
+    # Devuelve el token Y los datos del usuario
+    return {
+        "access_token": access_token, 
+        "token_type": "bearer",
+        "user": {
+            "id": user.id_usuario, # Asegúrate de que este sea el nombre correcto del campo ID
+            "name": user.nombre,
+            "email": user.correo,
+            "role": user.rol
+        }
+    }
 
 @router.post("/login/admin")
 async def login_admin_user(request: LoginRequest, db: Session = Depends(get_db)):
@@ -167,7 +179,7 @@ async def login_admin_user(request: LoginRequest, db: Session = Depends(get_db))
     if user.rol != "admin":
         raise HTTPException(status_code=403, detail="Credenciales incorrectas")
 
-    access_token = create_access_token(data={"sub": user.correo}, role=user.rol)
+    access_token = create_access_token(data={"sub": user.correo, "id": user.id_usuario}, role=user.rol)
     return {"access_token": access_token, "token_type": "bearer"}
 
 @router.post("/social-login")
@@ -202,7 +214,7 @@ async def social_login(request: SocialLoginRequest, db: Session = Depends(get_db
             db.refresh(user)
 
     # 3. Crear y devolver el token de acceso de nuestra aplicación
-    access_token = create_access_token(data={"sub": user.correo}, role=user.rol)
+    access_token = create_access_token(data={"sub": user.correo, "id": user.id_usuario}, role=user.rol)
     return {"access_token": access_token, "token_type": "bearer"}
 
 
