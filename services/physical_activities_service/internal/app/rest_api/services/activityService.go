@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -91,8 +92,11 @@ func (us *Activity) CreateActivity(userId int, createActivityRequest *dtos.Creat
 	activity := createActivityRequest.ToActivity()
 	activity.IdUsuaio = userId
 
+	fmt.Println("CreateActivtyRequest: $1, idUser: $2", activity, userId)
+
 	err := us.ActivityRepo.Create(activity)
 	if err != nil {
+		fmt.Println("Errrrrooooooorrr: al crear la actividad en el repositorio.")
 		return nil, &models.ErrorResponse{
 			Code:    http.StatusInternalServerError,
 			Message: "Failed to create Activity",
@@ -110,6 +114,7 @@ func (us *Activity) CreateActivity(userId int, createActivityRequest *dtos.Creat
 		}
 		jsonData, err := json.Marshal(gamificationRequest)
 		if err != nil {
+			fmt.Println("Errrrrooooooorrr: al crear el JSON para el servicio de gamificación.")
 			log.Printf("Error creating JSON for gamification service: %v", err)
 			return
 		}

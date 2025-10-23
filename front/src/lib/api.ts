@@ -2,7 +2,7 @@ const AUTH_API = process.env.NEXT_PUBLIC_AUTH_API_URL;
 const USER_API = process.env.NEXT_PUBLIC_USER_API_URL;
 const GAMIFICATION_API = process.env.NEXT_PUBLIC_GAMIFICATION_API_URL;
 const POSTS_API = process.env.NEXT_PUBLIC_POSTS_API_URL;
-const PHYSICAL_ACTIVITIES_API = process.env.NEXT_PUBLIC_PHYSICAL_ACTIVITIES_API_URL;
+const ACTIVITIES_API = process.env.NEXT_PUBLIC_ACTIVITIES_API_URL;
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8006/admin';
 
 import type { Challenge, ProgressLog } from '@/lib/data';
@@ -215,7 +215,7 @@ export async function getLikes(postId: number) {
 
 export async function getMyActivities(userId: number) {
   // Nota: El token ya está incluido en fetchWithToken
-  return fetchWithToken(`${PHYSICAL_ACTIVITIES_API}/activities/users/${userId}/activities`);
+  return fetchWithToken(`${ACTIVITIES_API}/users/${userId}/activities`);
 }
 
 export async function createActivity(userId: number, activityData: {
@@ -224,7 +224,7 @@ export async function createActivity(userId: number, activityData: {
   duracion_min: number;
   fecha: string; // Formato ISO 8601: "2025-10-21T10:00:00Z"
 }) {
-  return fetchWithToken(`${PHYSICAL_ACTIVITIES_API}/activities/users/${userId}/activities`, {
+  return fetchWithToken(`${ACTIVITIES_API}/users/${userId}/activities`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(activityData),
