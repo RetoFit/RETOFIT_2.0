@@ -25,6 +25,7 @@ func (h *Activity) GetAllActivitiesByUser(ctx *gin.Context) {
 	userId, errId := strconv.Atoi(ctx.Param("id"))
 
 	if errId != nil {
+		fmt.Println("Errrrrooooooorrr: id de usuario no válido.")
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "User ID not valid"})
 
 		return
@@ -32,11 +33,12 @@ func (h *Activity) GetAllActivitiesByUser(ctx *gin.Context) {
 
 	allActivities, err := h.ActivityService.GetAllActivitiesByUser(userId)
 	if err != nil {
+		fmt.Println("Errrrrooooooorrr: al obtener todas las actividades del usuario.")
 		ctx.AbortWithStatusJSON(err.Code, err)
 
 		return
 	}
-
+	fmt.Println("Status: $1", allActivities)
 	ctx.JSON(http.StatusOK, allActivities)
 }
 
@@ -99,11 +101,13 @@ func (h *Activity) CreateActivity(ctx *gin.Context) {
 
 	if errId != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "User ID not valid"})
+		fmt.Println("Errrrrooooooorrr: id de usuario no válido.")
 
 		return
 	}
 
 	if err := ctx.ShouldBindJSON(&createActivityRequest); err != nil {
+		fmt.Println("Errrrrooooooorrr: should bind json falló.")
 		var ve validator.ValidationErrors
 		if errors.As(err, &ve) {
 			out := make(map[string]string)
@@ -112,15 +116,18 @@ func (h *Activity) CreateActivity(ctx *gin.Context) {
 			}
 			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"errors": out})
 
+			fmt.Println("Errrrrooooooorrr: validation errors found.")
 			return
 		}
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 
+		fmt.Println("Errrrrooooooorrr: other error on binding JSON.")
 		return
 	}
 
 	createActivityResponse, signupError := h.ActivityService.CreateActivity(userId, &createActivityRequest)
 	if signupError != nil {
+		fmt.Println("Errrrrooooooorrr: error al crear la actividad.")
 		ctx.AbortWithStatusJSON(signupError.Code, signupError)
 
 		return

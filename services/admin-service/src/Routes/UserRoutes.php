@@ -16,12 +16,12 @@ class UserRoutes
         $group->get('/users', function (Request $request, Response $response, $args) use ($userServiceClient, $authServiceClient) {
             try {
             
-                $authUsersResponse = $authServiceClient->get('/admin/users');
+                $authUsersResponse = $authServiceClient->get('/api/auth_admin/admin/users');
                 $authUsers = $authUsersResponse->getStatusCode() === 200 ? json_decode($authUsersResponse->getBody()->getContents(), true) : [];
-                $profileUsersResponse = $userServiceClient->get('/admin/users');
+                $profileUsersResponse = $userServiceClient->get('/api/users_admin/admin/users');
                 $profileUsers = $profileUsersResponse->getStatusCode() === 200 ? json_decode($profileUsersResponse->getBody()->getContents(), true) : [];
 
-                $statsResponse = $authServiceClient->get('/admin/users/stats');
+                $statsResponse = $authServiceClient->get('/api/auth_admin/admin/users/stats');
                 $stats = $statsResponse->getStatusCode() === 200 ? json_decode($statsResponse->getBody()->getContents(), true) : ['total_users' => 0, 'active_users' => 0, 'suspended_users' => 0];
 
                 // Crear un mapa con los detalles de perfil para una búsqueda rápida y eficiente
@@ -32,6 +32,7 @@ class UserRoutes
                 }
 
             } catch (GuzzleException $e) {
+                error_log("Error comunicándose con auth-service en user admin: " . $e->getMessage());
                 $errorPayload = json_encode(['error' => 'Error de comunicación con los microservicios: ' . $e->getMessage()]);
                 $response->getBody()->write($errorPayload);
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
@@ -74,7 +75,7 @@ class UserRoutes
             }
 
             try {
-                $authResponse = $authServiceClient->post('/auth/register', [
+                $authResponse = $authServiceClient->post('/api/auth_admin/auth/register', [
                     'json' => [
                         'name' => $data['name'],
                         'last_name' => $data['last_name'] ?? '',
@@ -104,7 +105,7 @@ class UserRoutes
             }
 
             try {
-                $authServiceClient->patch("/admin/users/{$userId}/status", [
+                $authServiceClient->patch("/api/auth_admin/admin/users/{$userId}/status", [
                     'json' => ['status' => $newStatus]
                 ]);
             } catch (GuzzleException $e) {
@@ -124,8 +125,8 @@ class UserRoutes
             
             try {
                
-                $authServiceClient->delete("/admin/users/{$userId}");
-                $userServiceClient->delete("/admin/users/{$userId}");
+                $authServiceClient->delete("/api/auth_admin/admin/users/{$userId}");
+                $userServiceClient->delete("/api/users_admin/admin/users/{$userId}");
             } catch (GuzzleException $e) {
                 
                 $response->getBody()->write(json_encode(['error' => 'No se pudo eliminar el usuario: ' . $e->getMessage()]));

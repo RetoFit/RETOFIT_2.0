@@ -23,7 +23,7 @@ security = HTTPBearer()
 
 
 USER_SERVICE_URL = "http://127.0.0.1:8004"
-PHYSICAL_ACTIVITIES_SERVICE_URL = "http://localhost:8000"
+PHYSICAL_ACTIVITIES_SERVICE_URL = "http://localhost:8002"
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 FRONTEND_URL = os.getenv("FRONTEND_URL")
@@ -110,6 +110,7 @@ async def verify_code_endpoint(request: EmailVerificationRequest, db: Session = 
 
 @router.post("/register")
 async def register_user(request: UserRegistrationRequest, db: Session = Depends(get_db)):
+    print('Llego mensaje')
     hashed_password = get_password_hash(request.password) if request.password else None
     user = User(
         nombre=request.name,
@@ -230,6 +231,7 @@ async def validate_token(credentials: HTTPAuthorizationCredentials = Depends(sec
         dict: Estado de validación del token.
     """
     token = credentials.credentials
+    print("ENNTROOOOO TOKEEEEEENNNN!!!!!!!!!!!!!!!")
     try:
         payload = decode_access_token(token)
         return {"status": "success", "message": "Token válido", "data": payload}

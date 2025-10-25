@@ -4,6 +4,7 @@ import (
 	"RetoFit-App/services/physical_activities_service/internal/app/rest_api/database"
 	"RetoFit-App/services/physical_activities_service/internal/app/rest_api/entities"
 	"database/sql"
+	"fmt"
 )
 
 type Activity struct {
@@ -41,18 +42,22 @@ func (r *Activity) GetAllActivitiesByUser(idUsuario int) ([]*entities.Activity, 
 }
 
 func (r *Activity) Create(activity *entities.Activity) error {
-    query := "INSERT INTO actividades (tipo, distancia_km, duracion_min, fecha, id_usuario) VALUES ($1, $2, $3, $4, $5) RETURNING id_actividad"
+	query := "INSERT INTO actividades (tipo, distancia_km, duracion_min, fecha, id_usuario) VALUES ($1, $2, $3, $4, $5) RETURNING id_actividad"
 
-    var insertedID int
+	var insertedID int
 
-    err := r.DB.QueryRow(query, activity.Tipo, activity.DistanciaKm, activity.DuracionMin, activity.Fecha, activity.IdUsuaio).Scan(&insertedID)
+	err := r.DB.QueryRow(query, activity.Tipo, activity.DistanciaKm, activity.DuracionMin, activity.Fecha, activity.IdUsuaio).Scan(&insertedID)
 
-    if err != nil {
-        return err
-    }
+	if err != nil {
+		fmt.Println("insertedID: $1", insertedID)
+		fmt.Println("Query: $1", query)
+		fmt.Println("Error: $1", err)
+		fmt.Println("Errrrrooooooorrr: al insertar la actividad en la base de datos.")
+		return err
+	}
 
-    activity.IdActividad = insertedID
-    return nil
+	activity.IdActividad = insertedID
+	return nil
 }
 
 func (r *Activity) Update(activity *entities.Activity) error {

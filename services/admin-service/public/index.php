@@ -27,12 +27,12 @@ $pdo_challenges->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 // --- Cliente HTTP para user service
 $userServiceClient = new Client([
-    'base_uri' => $_ENV['USER_SERVICE_URL'] ?? 'http://localhost:8004',
+    'base_uri' => $_ENV['USER_SERVICE_URL'] ?? 'http://localhost:8080/api/users_admin',
     'timeout'  => 5.0,
 ]);
 // --- Cliente HTTP para auth service
 $authServiceClient = new Client([
-    'base_uri' => $_ENV['AUTH_SERVICE_URL'] ?? 'http://localhost:8001',
+    'base_uri' => $_ENV['AUTH_SERVICE_URL'] ?? 'http://localhost:8080/api/auth_admin',
     'timeout'  => 5.0,
 ]);
 
@@ -49,8 +49,6 @@ $app->options('/{routes:.+}', function ($request, $response, $args) {
 $app->add(function (Request $request, $handler) {
     $response = $handler->handle($request);
     return $response
-            ->withHeader('Access-Control-Allow-Origin', $_ENV['FRONTEND_URL'] ?? 'http://localhost:3000')
-            ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
             ->withHeader('Access-control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
 });
 
@@ -67,7 +65,7 @@ $app->group('/admin', function ($group) use ($userServiceClient, $authServiceCli
     $group->get('/dashboard-stats', function (Request $request, Response $response) use ($userServiceClient, $authServiceClient, $pdo_challenges) {
         try {
             // Petición al auth-service para obtener el conteo de usuarios registrados.
-            $authServiceResponse = $authServiceClient->get('/admin/users/stats');
+            $authServiceResponse = $authServiceClient->get('/api/auth_admin/admin/users/stats');
             $userStats = json_decode($authServiceResponse->getBody()->getContents(), true);
             $totalUsers = $userStats['total_users'] ?? 0;
 
@@ -79,9 +77,11 @@ $app->group('/admin', function ($group) use ($userServiceClient, $authServiceCli
             $response->getBody()->write(json_encode($stats));
             return $response->withHeader('Content-Type', 'application/json');
         } catch (PDOException $e) {
+            error_log("Error DB (challenges): " . $e->getMessage());
             $response->getBody()->write(json_encode(['error' => 'Error de base de datos al obtener estadísticas de retos: ' . $e->getMessage()]));
             return $response->withStatus(500)->withHeader('Content-Type', 'application/json');
         } catch (\GuzzleHttp\Exception\GuzzleException $e) {
+            error_log("Error comunicándose con auth-service: " . $e->getMessage());
             $response->getBody()->write(json_encode(['error' => 'Error de comunicación con el servicio de autenticación: ' . $e->getMessage()]));
             return $response->withStatus(500)->withHeader('Content-Type', 'application/json');
         }
@@ -105,7 +105,7 @@ $app->group('/admin', function ($group) use ($userServiceClient, $authServiceCli
     $group->get('/analytics/users', function (Request $request, Response $response) use ($userServiceClient) {
         try {
             // Llama al nuevo endpoint en el user-service
-            $userServiceResponse = $userServiceClient->get('/admin/analytics/users');
+            $userServiceResponse = $userServiceClient->get('/api/users_admin/admin/analytics/users');
             $data = json_decode($userServiceResponse->getBody()->getContents(), true);
 
             $response->getBody()->write(json_encode($data));

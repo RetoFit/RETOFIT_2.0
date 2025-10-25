@@ -41,7 +41,7 @@ export default async function ChallengePage({ params }: ChallengePageProps) {
   if (!challenge) {
     notFound();
   }
-
+  console.log('Challenge fetched:', challenge);
   // Pasamos solo el reto al componente JSX
   return <ChallengePageContent challenge={challenge} />;
 }

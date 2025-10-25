@@ -56,7 +56,7 @@ export function ChallengeProgress({
 
       try {
         // 2. Validamos el token contra el auth-service (puerto 8001)
-        const authRes = await fetch('http://localhost:8001/auth/validate-token', {
+        const authRes = await fetch('http://127.0.0.1:8080/api/auth/validate-token', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 

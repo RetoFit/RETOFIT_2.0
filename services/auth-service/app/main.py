@@ -12,8 +12,7 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(title="Auth Service")
 
 app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"], 
+    CORSMiddleware, 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

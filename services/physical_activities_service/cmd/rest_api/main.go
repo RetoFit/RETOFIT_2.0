@@ -64,10 +64,10 @@ func main() {
 	userHandler := handlers.NewUserHandler(userService)
 	// --- FIN DEL CAMBIO ---
 
-	cors := config.CorsNew()
+	//cors := config.CorsNew()
 
 	router := gin.Default()
-	router.Use(cors)
+	//router.Use(cors)
 
 	// Register routes
 	// --- INICIO DEL CAMBIO ---
@@ -76,5 +76,6 @@ func main() {
 	// --- FIN DEL CAMBIO ---
 
 	server := serve.NewServer(log.Logger, router, config)
+	log.Info().Msg("Physical Activities Service running...")
 	server.Serve()
 }

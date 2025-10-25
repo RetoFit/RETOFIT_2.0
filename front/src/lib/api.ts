@@ -2,8 +2,8 @@ const AUTH_API = process.env.NEXT_PUBLIC_AUTH_API_URL;
 const USER_API = process.env.NEXT_PUBLIC_USER_API_URL;
 const GAMIFICATION_API = process.env.NEXT_PUBLIC_GAMIFICATION_API_URL;
 const POSTS_API = process.env.NEXT_PUBLIC_POSTS_API_URL;
-const PHYSICAL_ACTIVITIES_API = process.env.NEXT_PUBLIC_PHYSICAL_ACTIVITIES_API_URL;
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8006/admin';
+const ACTIVITIES_API = process.env.NEXT_PUBLIC_ACTIVITIES_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_ADMIN_API_URL || 'http://localhost:8006/admin';
 
 import type { Challenge, ProgressLog } from '@/lib/data';
 // --- Funciones para el Servicio de Autenticación ---
@@ -65,6 +65,7 @@ export async function socialLogin(userData: { name: string, email: string, provi
 // Función genérica para hacer fetch con token
 async function fetchWithToken(url: string, options: RequestInit = {}) {
   const token = localStorage.getItem('accessToken');
+  console.log("Token en fetchWithToken:", token);
   if (!token) {
     throw new Error('No se encontró token de acceso. Por favor, inicie sesión.');
   }
@@ -75,6 +76,7 @@ async function fetchWithToken(url: string, options: RequestInit = {}) {
   };
 
   const response = await fetch(url, { ...options, headers });
+  console.log("Response status en fetchWithToken:", response);
 
   if (response.status === 401) {
     // Token inválido o expirado
@@ -215,7 +217,7 @@ export async function getLikes(postId: number) {
 
 export async function getMyActivities(userId: number) {
   // Nota: El token ya está incluido en fetchWithToken
-  return fetchWithToken(`${PHYSICAL_ACTIVITIES_API}/activities/users/${userId}/activities`);
+  return fetchWithToken(`${ACTIVITIES_API}/users/${userId}/activities`);
 }
 
 export async function createActivity(userId: number, activityData: {
@@ -224,7 +226,7 @@ export async function createActivity(userId: number, activityData: {
   duracion_min: number;
   fecha: string; // Formato ISO 8601: "2025-10-21T10:00:00Z"
 }) {
-  return fetchWithToken(`${PHYSICAL_ACTIVITIES_API}/activities/users/${userId}/activities`, {
+  return fetchWithToken(`${ACTIVITIES_API}/users/${userId}/activities`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(activityData),

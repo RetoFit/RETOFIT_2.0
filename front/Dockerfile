@@ -1,20 +1,18 @@
-# Usa una imagen base de Node.js
 FROM node:18-alpine
 
-# Establece el directorio de trabajo en /app
 WORKDIR /app
 
-# Copia los archivos package.json y package-lock.json
-COPY ./front/package*.json ./
+# Copiar archivos de configuración de dependencias
+COPY package.json package-lock.json* ./
 
-# Instala las dependencias del proyecto
+# Instalar dependencias
 RUN npm install
 
-# Copia el resto de los archivos de la aplicación
-COPY ./front/ .
+# Copiar todo el código fuente
+COPY . .
 
-# Expone el puerto 3001
-EXPOSE 3001
+# Exponer el puerto
+EXPOSE 3000
 
-# Comando para ejecutar la aplicación en modo de desarrollo
-CMD ["npm", "run", "dev", "--", "-p", "3001"]
+# Comando para desarrollo (se sobreescribe en docker-compose, pero lo dejamos como default)
+CMD ["npm", "run", "dev"]
