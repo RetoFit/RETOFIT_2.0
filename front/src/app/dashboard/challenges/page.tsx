@@ -1,14 +1,12 @@
 import { ChallengeCard } from '@/components/challenge-card';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { challenges } from '@/lib/data';
+import { getChallenges } from '@/lib/api'; // Importamos la nueva función
+import type { Challenge } from '@/lib/data'; // Mantenemos el tipo para TypeScript
 
-export default function ChallengesPage() {
+// Convertimos el componente en una función asíncrona
+export default async function ChallengesPage() {
+  // Llamamos a la API para obtener los retos
+  const challenges: Challenge[] = await getChallenges();
+
   return (
     <div className="container mx-auto py-8">
       <div className="mb-8 text-center">

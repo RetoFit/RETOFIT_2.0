@@ -64,10 +64,10 @@ func main() {
 	userHandler := handlers.NewUserHandler(userService)
 	// --- FIN DEL CAMBIO ---
 
-	cors := config.CorsNew()
+	//cors := config.CorsNew()
 
 	router := gin.Default()
-	router.Use(cors)
+	//router.Use(cors)
 
 	// Register routes
 	// --- INICIO DEL CAMBIO ---

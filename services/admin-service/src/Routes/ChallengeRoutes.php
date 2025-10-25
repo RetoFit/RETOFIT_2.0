@@ -119,5 +119,106 @@ class ChallengeRoutes
                 return $response->withStatus(500)->withHeader('Content-Type', 'application/json');
             }
         });
+
+        // Endpoint para obtener un reto específico por ID
+        $group->get('/challenges/{id}', function (Request $request, Response $response, array $args) use ($pdo) {
+            $id = $args['id'];
+            try {
+                $stmt = $pdo->prepare("SELECT * FROM challenges WHERE id = ?");
+                $stmt->execute([$id]);
+                $challenge = $stmt->fetch(PDO::FETCH_ASSOC); // Usar FETCH_ASSOC
+
+                if ($challenge) {
+                    // Aquí podrías necesitar transformar los datos si el frontend espera un formato específico
+                    // Por ejemplo, el frontend espera un objeto `image`
+                    $challenge['image'] = [
+                        'imageUrl' => $challenge['image_url'] ?? '/default-image.jpg',
+                        'description' => $challenge['name'], // O un campo de descripción de imagen si lo tienes
+                        'imageHint' => 'image for ' . $challenge['name']
+                    ];
+                    // El frontend también espera 'participants', 'target', 'unit'
+                    // Asumimos que 'target' y 'unit' ya están bien
+                    // 'participants' necesitaría otra consulta, por ahora lo simulamos
+                    $challenge['participants'] = []; // Necesitarías una consulta real aquí
+
+                    $response->getBody()->write(json_encode($challenge));
+                    return $response->withHeader('Content-Type', 'application/json');
+                } else {
+                    $response->getBody()->write(json_encode(['error' => 'Reto no encontrado.']));
+                    return $response->withStatus(404)->withHeader('Content-Type', 'application/json');
+                }
+            } catch (PDOException $e) {
+                $response->getBody()->write(json_encode(['error' => 'Error en la base de datos: ' . $e->getMessage()]));
+                return $response->withStatus(500)->withHeader('Content-Type', 'application/json');
+            }
+        });
+
+        $group->get('/challenges/{id}/progress/{userId}', function (Request $request, Response $response, array $args) use ($pdo) {
+            try {
+                $stmt = $pdo->prepare("SELECT * FROM progress_logs WHERE challenge_id = :challenge_id AND user_id = :user_id");
+                $stmt->execute([
+                    ':challenge_id' => $args['id'],
+                    ':user_id' => $args['userId']
+                ]);
+                $progress = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                if ($progress) {
+                    $response->getBody()->write(json_encode($progress));
+                    return $response->withHeader('Content-Type', 'application/json');
+                } else {
+                    // Si no existe, devolvemos un progreso por defecto (0)
+                    $defaultProgress = [
+                        'challenge_id' => (int)$args['id'],
+                        'user_id' => $args['userId'],
+                        'progress' => 0,
+                    ];
+                    $response->getBody()->write(json_encode($defaultProgress));
+                    return $response->withStatus(200)->withHeader('Content-Type', 'application/json');
+                }
+            } catch (PDOException $e) {
+                $response->getBody()->write(json_encode(['error' => 'Error en la base de datos: ' . $e->getMessage()]));
+                return $response->withStatus(500)->withHeader('Content-Type', 'application/json');
+            }
+        });
+
+        /**
+         * Endpoint para ACTUALIZAR (crear/modificar) el progreso de un usuario
+         */
+        $group->patch('/challenges/{id}/progress/{userId}', function (Request $request, Response $response, array $args) use ($pdo) {
+            $data = $request->getParsedBody();
+            $newProgress = $data['progress'] ?? null;
+
+            if ($newProgress === null || !is_numeric($newProgress) || $newProgress < 0) {
+                $response->getBody()->write(json_encode(['error' => 'Se requiere un "progress" numérico válido.']));
+                return $response->withStatus(400)->withHeader('Content-Type', 'application/json');
+            }
+
+            // Usamos "INSERT ... ON CONFLICT" (Upsert) para crear o actualizar el registro
+            $sql = "INSERT INTO progress_logs (challenge_id, user_id, progress) 
+                    VALUES (:challenge_id, :user_id, :progress)
+                    ON CONFLICT (challenge_id, user_id) 
+                    DO UPDATE SET progress = :progress, updated_at = CURRENT_TIMESTAMP
+                    RETURNING *"; // RETURNING * devuelve la fila actualizada
+
+            try {
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute([
+                    ':challenge_id' => (int)$args['id'],
+                    ':user_id' => $args['userId'],
+                    ':progress' => (int)$newProgress
+                ]);
+                
+                $updatedProgress = $stmt->fetch(PDO::FETCH_ASSOC);
+                $response->getBody()->write(json_encode($updatedProgress));
+                return $response->withHeader('Content-Type', 'application/json');
+
+            } catch (PDOException $e) {
+                $response->getBody()->write(json_encode(['error' => 'Error al guardar el progreso: ' . $e->getMessage()]));
+                return $response->withStatus(500)->withHeader('Content-Type', 'application/json');
+            }
+        });
+
+        
+
     }
 }

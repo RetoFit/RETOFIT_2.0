@@ -41,7 +41,7 @@ export default function AnalyticsPage() {
     const fetchAnalytics = async () => {
       try {
         // Asumimos que la URL del admin-service está en una variable de entorno o hardcodeada
-        const response = await fetch('http://localhost:8006/admin/analytics/users');
+        const response = await fetch('http://localhost:8080/api/admin/analytics/users');
         if (!response.ok) {
           throw new Error('No se pudieron cargar las analíticas.');
         }

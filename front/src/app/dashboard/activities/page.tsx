@@ -39,9 +39,11 @@ export default function ActivitiesPage() {
         setCurrentUser({ id: userData.id_usuario });
 
         const activitiesData = await getMyActivities(userData.id_usuario);
+        console.log("Datos de actividades recibidos:", activitiesData);
         setActivities(activitiesData.activities || []); // El backend devuelve un objeto { activities: [...] }
 
       } catch (err: any) {
+        console.error('Error fetching data:', err);
         setError(err.message);
       } finally {
         setLoading(false);

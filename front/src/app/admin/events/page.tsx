@@ -25,6 +25,7 @@ import { useToast } from "@/hooks/use-toast";
 
 type View = 'list' | 'create' | 'edit';
 
+// --- CAMBIO 1: Añadir image_url a la interfaz ---
 interface Challenge {
   id: number;
   name: string;
@@ -34,8 +35,10 @@ interface Challenge {
   unit: string;
   start_date: string;
   end_date: string;
+  image_url: string; // <-- AÑADIDO
 }
 
+// --- CAMBIO 2: Añadir image_url al estado inicial ---
 const INITIAL_FORM_STATE = {
   name: "",
   description: "",
@@ -44,6 +47,7 @@ const INITIAL_FORM_STATE = {
   unit: "",
   start_date: "",
   end_date: "",
+  image_url: "", // <-- AÑADIDO
 };
 
 export default function AdminEventsPage() {
@@ -108,7 +112,8 @@ export default function AdminEventsPage() {
       setIsLoading(false);
     }
   };
-
+  
+  // --- CAMBIO 3: Añadir image_url al editar ---
   const handleEditClick = (challenge: Challenge) => {
     setCurrentChallenge(challenge);
     setFormData({
@@ -119,6 +124,7 @@ export default function AdminEventsPage() {
       unit: challenge.unit || "",
       start_date: challenge.start_date ? challenge.start_date.split('T')[0] : "",
       end_date: challenge.end_date ? challenge.end_date.split('T')[0] : "",
+      image_url: challenge.image_url || "", // <-- AÑADIDO
     });
     setView('edit');
   };
@@ -147,6 +153,14 @@ export default function AdminEventsPage() {
                 <Label htmlFor="name">Nombre del Reto</Label>
                 <Input id="name" name="name" value={formData.name} onChange={handleChange} required />
               </div>
+
+              {/* --- CAMBIO 4: Añadir campo de imagen al formulario --- */}
+              <div className="grid gap-2">
+                <Label htmlFor="image_url">URL de la Imagen</Label>
+                <Input id="image_url" name="image_url" placeholder="https://ejemplo.com/imagen.png" value={formData.image_url} onChange={handleChange} />
+              </div>
+              {/* --- FIN DEL CAMBIO --- */}
+
               <div className="grid gap-2">
                 <Label htmlFor="description">Descripción</Label>
                 <Textarea id="description" name="description" value={formData.description} onChange={handleChange} />
