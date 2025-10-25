@@ -35,6 +35,7 @@ exit 0' SIGINT
 cd api_gateway
 mvn clean package -DskipTests
 java -jar target/*.jar &
+cd ..
 GATEWAY_PID=$!
 echo "🚀 Iniciando API Gateway..."
 
