@@ -17,6 +17,15 @@ spring:
           filters:
             - StripPrefix=1  # Remueve /api del path
             - AddRequestHeader=X-Gateway, ApiGateway
+
+        # Ruta para servicio de admin
+        - id: admin-dashboard-service
+          uri: http://localhost:8001
+          predicates:
+            - Path=/api/auth_admin/admin/**
+          filters:
+            - StripPrefix=2  # Remueve /api/auth_admin del path
+            - AddRequestHeader=X-Gateway, ApiGateway
         
         # Ruta para servicio de productos
         - id: activities-service
@@ -42,6 +51,14 @@ spring:
             - Path=/api/users/**
           filters:
             - StripPrefix=1
+            - AddRequestHeader=X-Gateway, ApiGateway
+
+        - id: admin-users-stats-service
+          uri: http://localhost:8004
+          predicates:
+            - Path=/api/users_admin/admin/**
+          filters:
+            - StripPrefix=2
             - AddRequestHeader=X-Gateway, ApiGateway
         
         - id: posts-service

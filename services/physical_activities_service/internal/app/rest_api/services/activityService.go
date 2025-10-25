@@ -27,6 +27,7 @@ func (us *Activity) GetAllActivitiesByUser(id int) (*dtos.GetAllActivitiesRespon
 
 	queriedActivities, err := us.ActivityRepo.GetAllActivitiesByUser(id)
 	if err != nil {
+		fmt.Println("Errrrrooooooorrr: al obtener todas las actividades del usuario.")
 		return nil, &models.ErrorResponse{
 			Code:    http.StatusInternalServerError,
 			Message: "Internal Server Error",

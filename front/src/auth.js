@@ -14,7 +14,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       async authorize(credentials) {
         try {
           // Llama a tu endpoint de login del auth-service
-          const res = await fetch("http://localhost:8001/login", { // <-- Tu puerto 8001
+          const res = await fetch("http://127.0.0.1:8080/api/auth", { // <-- Tu puerto 8001
             method: 'POST',
             body: JSON.stringify({
               email: credentials.email,

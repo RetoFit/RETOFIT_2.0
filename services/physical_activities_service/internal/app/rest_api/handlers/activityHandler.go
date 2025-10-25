@@ -25,6 +25,7 @@ func (h *Activity) GetAllActivitiesByUser(ctx *gin.Context) {
 	userId, errId := strconv.Atoi(ctx.Param("id"))
 
 	if errId != nil {
+		fmt.Println("Errrrrooooooorrr: id de usuario no válido.")
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "User ID not valid"})
 
 		return
@@ -32,11 +33,12 @@ func (h *Activity) GetAllActivitiesByUser(ctx *gin.Context) {
 
 	allActivities, err := h.ActivityService.GetAllActivitiesByUser(userId)
 	if err != nil {
+		fmt.Println("Errrrrooooooorrr: al obtener todas las actividades del usuario.")
 		ctx.AbortWithStatusJSON(err.Code, err)
 
 		return
 	}
-
+	fmt.Println("Status: $1", allActivities)
 	ctx.JSON(http.StatusOK, allActivities)
 }
 

@@ -22,12 +22,8 @@ router = APIRouter()
 security = HTTPBearer()
 
 
-<<<<<<< HEAD
-USER_SERVICE_URL = "http://user-service:8000"
-=======
 USER_SERVICE_URL = "http://127.0.0.1:8004"
-PHYSICAL_ACTIVITIES_SERVICE_URL = "http://localhost:8000"
->>>>>>> Retofit2.1
+PHYSICAL_ACTIVITIES_SERVICE_URL = "http://localhost:8002"
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 FRONTEND_URL = os.getenv("FRONTEND_URL")
@@ -235,6 +231,7 @@ async def validate_token(credentials: HTTPAuthorizationCredentials = Depends(sec
         dict: Estado de validación del token.
     """
     token = credentials.credentials
+    print("ENNTROOOOO TOKEEEEEENNNN!!!!!!!!!!!!!!!")
     try:
         payload = decode_access_token(token)
         return {"status": "success", "message": "Token válido", "data": payload}
