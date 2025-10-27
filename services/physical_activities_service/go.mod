@@ -8,6 +8,8 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.10.9
 	github.com/rs/zerolog v1.34.0
+	google.golang.org/grpc v1.76.0
+	google.golang.org/protobuf v1.36.9
 )
 
 require (
@@ -42,5 +44,5 @@ require (
 	golang.org/x/sys v0.36.0 // indirect
 	golang.org/x/text v0.29.0 // indirect
 	golang.org/x/tools v0.37.0 // indirect
-	google.golang.org/protobuf v1.36.9 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250804133106-a7a43d27e69b // indirect
 )

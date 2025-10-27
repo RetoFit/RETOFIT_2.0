@@ -5,6 +5,7 @@ import (
 	routes "RetoFit-App/services/physical_activities_service/api/server/router"
 	"RetoFit-App/services/physical_activities_service/configs"
 	"RetoFit-App/services/physical_activities_service/internal/app/rest_api/database"
+	"RetoFit-App/services/physical_activities_service/internal/app/rest_api/grpc"
 	"RetoFit-App/services/physical_activities_service/internal/app/rest_api/handlers"
 	"RetoFit-App/services/physical_activities_service/internal/app/rest_api/repositories"
 	"RetoFit-App/services/physical_activities_service/internal/app/rest_api/services"
@@ -43,26 +44,17 @@ func main() {
 	// Initialize repositories
 	activityRepo := repositories.NewActivityRepository(client.DB)
 
-	// --- INICIO DEL CAMBIO ---
-	// Inicializar el nuevo repositorio de usuario
-	userRepo := repositories.NewUserRepository(client.DB)
-	// --- FIN DEL CAMBIO ---
+	grpcClient, err := grpc.NewUserClient("localhost:50051") // 👈 puerto gRPC del servicio Python
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to connect to gRPC User service")
+		return
+	}
 
 	//Initialize services
 	activityService := services.NewActivityService(activityRepo)
 
-	// --- INICIO DEL CAMBIO ---
-	// Inicializar el nuevo servicio de usuario
-	userService := services.NewUserService(userRepo)
-	// --- FIN DEL CAMBIO ---
-
 	// Pass services to handlers
-	activityHandler := handlers.NewActivityHandler(activityService)
-
-	// --- INICIO DEL CAMBIO ---
-	// Inicializar el nuevo handler de usuario
-	userHandler := handlers.NewUserHandler(userService)
-	// --- FIN DEL CAMBIO ---
+	activityHandler := handlers.NewActivityHandler(activityService, grpcClient)
 
 	//cors := config.CorsNew()
 
@@ -72,7 +64,7 @@ func main() {
 	// Register routes
 	// --- INICIO DEL CAMBIO ---
 	// Pasar ambos handlers a la función de registro de rutas
-	routes.RegisterPublicEndpoints(router, activityHandler, userHandler)
+	routes.RegisterPublicEndpoints(router, activityHandler)
 	// --- FIN DEL CAMBIO ---
 
 	server := serve.NewServer(log.Logger, router, config)

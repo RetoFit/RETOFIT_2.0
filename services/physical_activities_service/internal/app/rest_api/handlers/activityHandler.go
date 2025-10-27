@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"RetoFit-App/services/physical_activities_service/internal/app/rest_api/grpc"
 	"RetoFit-App/services/physical_activities_service/internal/app/rest_api/models/dtos"
 	"RetoFit-App/services/physical_activities_service/internal/app/rest_api/services"
 
@@ -15,27 +16,40 @@ import (
 
 type Activity struct {
 	ActivityService *services.Activity
+	UserClient      *grpc.UserClient
 }
 
-func NewActivityHandler(activityService *services.Activity) *Activity {
-	return &Activity{ActivityService: activityService}
+func NewActivityHandler(activityService *services.Activity, userClient *grpc.UserClient) *Activity {
+	return &Activity{
+		ActivityService: activityService,
+		UserClient:      userClient,
+	}
 }
 
 func (h *Activity) GetAllActivitiesByUser(ctx *gin.Context) {
 	userId, errId := strconv.Atoi(ctx.Param("id"))
 
 	if errId != nil {
-		fmt.Println("Errrrrooooooorrr: id de usuario no válido.")
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "User ID not valid"})
 
 		return
 	}
 
-	allActivities, err := h.ActivityService.GetAllActivitiesByUser(userId)
-	if err != nil {
-		fmt.Println("Errrrrooooooorrr: al obtener todas las actividades del usuario.")
-		ctx.AbortWithStatusJSON(err.Code, err)
+	resp, errRGCP := h.UserClient.GetUserByID(ctx, int32(userId))
+	if errRGCP != nil {
+		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("User %d not found in Python service", userId)})
+		return
+	}
 
+	fmt.Printf("✅ Usuario recibido de Python: %+v\n", resp)
+
+	allActivities, err := h.ActivityService.GetAllActivitiesByUser(userId)
+	fmt.Println("Obteniendo las actividades para el usuario ID:", allActivities)
+
+	if err != nil {
+		fmt.Println("Error al obtener las actividades:", err)
+		// Si no es un ErrorResponse, responder con genérico
+		ctx.AbortWithStatusJSON(err.Code, gin.H{"error": err.Message})
 		return
 	}
 	fmt.Println("Status: $1", allActivities)

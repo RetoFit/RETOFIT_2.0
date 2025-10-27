@@ -7,7 +7,7 @@ import (
 )
 
 // V--- AQUÍ ESTÁ EL CAMBIO: de handlers.User a handlers.UserHandler ---V
-func RegisterPublicEndpoints(router *gin.Engine, activityHandlers *handlers.Activity, userHandlers *handlers.UserHandler) {
+func RegisterPublicEndpoints(router *gin.Engine, activityHandlers *handlers.Activity) {
 	// Rutas existentes para Actividades Físicas
 	router.GET("/activities/users/:id/activities", activityHandlers.GetAllActivitiesByUser)
 	router.GET("/activities/user/:id/activity/:id_activty", activityHandlers.GetActivity)
@@ -16,5 +16,5 @@ func RegisterPublicEndpoints(router *gin.Engine, activityHandlers *handlers.Acti
 	router.DELETE("/activities/user/:id/delete/:id_activity", activityHandlers.DeleteActivity)
 
 	// Nueva ruta para sincronizar/crear usuarios
-	router.POST("/users", userHandlers.CreateUser)
+	// router.POST("/users", userHandlers.CreateUser)
 }
