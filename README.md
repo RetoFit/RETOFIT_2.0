@@ -17,9 +17,8 @@ Bienvenido al repositorio oficial del proyecto RetoFit 2.0. Este es un monorepo 
 ## Sistema de Software
 
 ### Nombre
-<div style="font-size: 24px"><center><p><strong> RetoFit </strong></p></center></div>
-
-<center><img style="width: 50%; height: 50%; border-radius: 50%; object-fit: cover;" src="https://raw.githubusercontent.com/RetoFit/Image_Repository/refs/heads/main/svg-export-4x.png" alt="Logo"></center>
+<div align="center" style="font-size: 24px"><p><strong> RetoFit </strong></p>
+<img style="width: 50%; height: 50%; border-radius: 50%; object-fit: cover;" src="https://raw.githubusercontent.com/RetoFit/Image_Repository/refs/heads/main/svg-export-4x.png" alt="Logo"></div>
 
 ### 📜 Descripción
 
