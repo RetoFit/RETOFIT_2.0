@@ -1,6 +1,6 @@
-# RETOFIT 2.0 🏋️‍♂️
+# RetoFit 2.0 🏋️‍♂️
 
-Bienvenido al repositorio oficial del proyecto RETOFIT 2.0. Este es un monorepo que contiene la aplicación completa, incluyendo el frontend y todos los microservicios del backend.
+Bienvenido al repositorio oficial del proyecto RetoFit 2.0. Este es un monorepo que contiene la aplicación completa, incluyendo el frontend y todos los microservicios del backend.
 ## Equipo
 
 ### Nombre del equipo: 
@@ -9,7 +9,7 @@ Bienvenido al repositorio oficial del proyecto RETOFIT 2.0. Este es un monorepo 
 ### Miembros:
 - **Cristhian Alarcón**
 - **Andres Caro**
-- **Anderson Mateus**
+- **Anderson Steven Mateus Lopez**
 - **Anderson David Morales Chila**
 - **Daniel Ochoa**
 
