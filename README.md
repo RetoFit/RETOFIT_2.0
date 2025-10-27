@@ -3,17 +3,25 @@
 Bienvenido al repositorio oficial del proyecto RetoFit 2.0. Este es un monorepo que contiene la aplicación completa, incluyendo el frontend y todos los microservicios del backend.
 ## Equipo
 
-### Nombre del equipo: 
-**Retofit**
+### Nombre del equipo
+<div style="font-size: 24px"><center><p><strong> RetoFit Team </strong></p></center></div>
 
 ### Miembros:
-- **Cristhian Alarcón**
-- **Andres Caro**
-- **Anderson Steven Mateus Lopez**
-- **Anderson David Morales Chila**
-- **Daniel Ochoa**
+- **Cristhian Alejandro Alarcón Florido** (calarconf@unal.edu.co)
+- **Andres David Caro Mora** (ancarom@unal.edu.co)
+- **Anderson Steven Mateus Lopez** (amateusl@unal.edu.co)
+- **Anderson David Morales Chila** (amoralesch@unal.edu.co)
+- **Daniel Alejandro Ochoa Ruiz** (daochoar@unal.edu.co)
+- **Cristian David Machado Guzmán** (cmachado@unal.edu.co)
 
-## 📜 Descripción
+## Sistema de Software
+
+### Nombre
+<div style="font-size: 24px"><center><p><strong> RetoFit </strong></p></center></div>
+
+<center><img style="width: 50%; height: 50%; border-radius: 50%; object-fit: cover;" src="https://raw.githubusercontent.com/RetoFit/Image_Repository/refs/heads/main/svg-export-4x.png" alt="Logo"></center>
+
+### 📜 Descripción
 
 RETOFIT es una plataforma diseñada para ayudar y hacer un seguimiento a los ejercicios físicos de un usuario. Además, se intenta incentivar un mayor ejercicio físico con retos, logros y la creación de comunidades. La arquitectura está basada en microservicios para garantizar la escalabilidad y mantenibilidad del sistema.
 
@@ -32,13 +40,12 @@ RETOFIT es una plataforma diseñada para ayudar y hacer un seguimiento a los eje
 - **RF-3:** Gestionar perfiles (edad, peso, altura, nivel de condición física).
 - **RF-4:** Guardar historial de entrenamientos y métricas de progreso.
 - **RF-5:** Crear y unirse a retos individuales o grupales.
-- **RF-6:** Mostrar rankings globales, por grupos y entre amigos.
-- **RF-7:** Notificar avances, asignar puntos y medallas por logros alcanzados.
-- **RF-8:** Registrar actividades físicas manualmente.
-- **RF-9:** Permitir compartir/publicar logros.
-- **RF-10:** Permitir interacción básica (likes, comentarios en logros).
-- **RF-11:** Administración de contenidos (retos oficiales, banners de campañas).
-- **RF-12:** Monitoreo de estadísticas de uso (usuarios activos, actividades registradas).
+- **RF-6:** Notificar avances, asignar puntos y medallas por logros alcanzados.
+- **RF-7:** Registrar actividades físicas manualmente.
+- **RF-8:** Permitir compartir/publicar logros.
+- **RF-9:** Permitir interacción básica (likes, comentarios en logros).
+- **RF-10:** Administración de contenidos (retos oficiales, banners de campañas).
+- **RF-11:** Monitoreo de estadísticas de uso (usuarios activos, actividades registradas).
 
 ### Requisitos no funcionales
 ---
@@ -50,10 +57,17 @@ RETOFIT es una plataforma diseñada para ayudar y hacer un seguimiento a los eje
 - **RNF-6:** Validar que un usuario no se pueda unir dos veces al mismo reto. 
 - **RNF-7:** Definir reglas para asignación de puntos (ej. 10 puntos por cada actividad registrada, 50 por completar un reto).
 - **RNF-8:** Definir reglas para asignación de medallas (ej. medalla por primer reto completado, medalla por 100 km acumulados).
-- **RNF-9:** Validar que un usuario no pueda seguirse a sí mismo.
-- **RNF-10:** Implementar validación de entrada para evitar spam (ej: límite de caracteres en comentarios).
-- **RNF-11:** Implementar paginación en la consulta de comentarios.
-- **RNF-12:** Implementar validaciones de fechas para la activación de retos y banners.
+- **RNF-9:** Implementar validaciones de fechas para la activación de retos y banners.
+- **RNF-10:**
+- **RNF-11:**
+- **RNF-12:**
+- **RNF-13:**
+- **RNF-14:**
+- **RNF-15:**
+- **RNF-16:**
+- **RNF-17:**
+- **RNF-18:**
+- **RNF-19:**
 
 ## Estructura arquitectónica
 ### Estructura de componentes y conectores
