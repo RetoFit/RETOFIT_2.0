@@ -10,6 +10,7 @@ email-validator==2.3.0
 fastapi==0.119.0
 greenlet==3.2.4
 grpcio==1.76.0
+grpcio-reflection==1.76.0
 grpcio-tools==1.76.0
 h11==0.16.0
 idna==3.11

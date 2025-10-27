@@ -22,8 +22,8 @@ router = APIRouter()
 security = HTTPBearer()
 
 
-USER_SERVICE_URL = "http://127.0.0.1:8004"
-PHYSICAL_ACTIVITIES_SERVICE_URL = "http://localhost:8002"
+USER_SERVICE_URL = "http://127.0.0.1:8080/api/users"
+PHYSICAL_ACTIVITIES_SERVICE_URL = "http://localhost:8080/api/activities"
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 FRONTEND_URL = os.getenv("FRONTEND_URL")
@@ -131,14 +131,14 @@ async def register_user(request: UserRegistrationRequest, db: Session = Depends(
                 "apellido": user.apellido,
                 "correo": user.correo,
             }
-            response = await client.post(f"{USER_SERVICE_URL}/users/", json=user_profile_data)
+            response = await client.post(f"{USER_SERVICE_URL}/", json=user_profile_data)
             response.raise_for_status() # Lanza un error si la solicitud falla
             # 2. Notificar a physical-activities-service (NUEVO)
             # Este servicio solo necesita el ID para crear la referencia.
             activity_user_data = {"id_usuario": user.id_usuario}
             # El endpoint podría ser '/users' o similar. Debes crearlo en el servicio de Go.
-            response_activities = await client.post(f"{PHYSICAL_ACTIVITIES_SERVICE_URL}/users", json=activity_user_data)
-            response_activities.raise_for_status()
+            #response_activities = await client.post(f"{PHYSICAL_ACTIVITIES_SERVICE_URL}/users", json=activity_user_data)
+            #response_activities.raise_for_status()
             
     
     except httpx.RequestError as e:

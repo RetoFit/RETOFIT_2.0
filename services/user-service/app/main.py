@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.api.endpoints import router as user_router
 from .api.admin import router as admin_router
-from app.grpc.server import serve_grpc
+from app.grpc.grpc_server import serve_grpc
 from app.db.session import engine, Base
 
 Base.metadata.create_all(bind=engine)

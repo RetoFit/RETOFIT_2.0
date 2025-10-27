@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"RetoFit-App/services/physical_activities_service/internal/app/rest_api/grpc"
-	"RetoFit-App/services/physical_activities_service/internal/app/rest_api/models"
 	"RetoFit-App/services/physical_activities_service/internal/app/rest_api/models/dtos"
 	"RetoFit-App/services/physical_activities_service/internal/app/rest_api/services"
 
@@ -36,8 +35,8 @@ func (h *Activity) GetAllActivitiesByUser(ctx *gin.Context) {
 		return
 	}
 
-	resp, err := h.UserClient.GetUserByID(ctx, int32(userId))
-	if err != nil {
+	resp, errRGCP := h.UserClient.GetUserByID(ctx, int32(userId))
+	if errRGCP != nil {
 		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("User %d not found in Python service", userId)})
 		return
 	}
@@ -45,14 +44,12 @@ func (h *Activity) GetAllActivitiesByUser(ctx *gin.Context) {
 	fmt.Printf("✅ Usuario recibido de Python: %+v\n", resp)
 
 	allActivities, err := h.ActivityService.GetAllActivitiesByUser(userId)
+	fmt.Println("Obteniendo las actividades para el usuario ID:", allActivities)
 
 	if err != nil {
-		if e, ok := err.(*models.ErrorResponse); ok {
-			ctx.AbortWithStatusJSON(e.Code, gin.H{"error": e.Message})
-			return
-		}
+		fmt.Println("Error al obtener las actividades:", err)
 		// Si no es un ErrorResponse, responder con genérico
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.AbortWithStatusJSON(err.Code, gin.H{"error": err.Message})
 		return
 	}
 	fmt.Println("Status: $1", allActivities)
