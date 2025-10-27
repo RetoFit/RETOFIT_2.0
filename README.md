@@ -17,8 +17,8 @@ Bienvenido al repositorio oficial del proyecto RetoFit 2.0. Este es un monorepo 
 ## Sistema de Software
 
 ### Nombre
-<div align="center" style="font-size: 24px"><p><strong> RetoFit </strong></p>
-<img style="width: 50%; height: 50%; border-radius: 50%; object-fit: cover;" src="https://raw.githubusercontent.com/RetoFit/Image_Repository/refs/heads/main/svg-export-4x.png" alt="Logo"></div>
+<div align="center"><h3><strong> RetoFit </strong></h3>
+<img height="250px" width="250px" src="https://raw.githubusercontent.com/RetoFit/Image_Repository/refs/heads/main/svg-export-4x.png" alt="Logo"></div>
 
 ### 📜 Descripción
 
@@ -27,7 +27,12 @@ RETOFIT es una plataforma diseñada para ayudar y hacer un seguimiento a los eje
 ## 💻 Pila Tecnológica
 
 -   **Frontend:** [Next.js](https://nextjs.org/) (React Framework)
--   **Backend:** [Python](https://www.python.org/) con [FastAPI](https://fastapi.tiangolo.com/), Go, Node.js, PHp y Java.
+-   **Backend:** 
+    - [Python](https://www.python.org/) + [FastAPI](https://fastapi.tiangolo.com/).
+    - Go.
+    - Node.js.
+    - PHP.
+    - Java.
 -   **Arquitectura:** Microservicios
 
 ## Requisitos funcionales y no funcionales
@@ -57,31 +62,31 @@ RETOFIT es una plataforma diseñada para ayudar y hacer un seguimiento a los eje
 - **RNF-7:** Definir reglas para asignación de puntos (ej. 10 puntos por cada actividad registrada, 50 por completar un reto).
 - **RNF-8:** Definir reglas para asignación de medallas (ej. medalla por primer reto completado, medalla por 100 km acumulados).
 - **RNF-9:** Implementar validaciones de fechas para la activación de retos y banners.
-- **RNF-10:**
-- **RNF-11:**
-- **RNF-12:**
-- **RNF-13:**
-- **RNF-14:**
-- **RNF-15:**
-- **RNF-16:**
-- **RNF-17:**
-- **RNF-18:**
-- **RNF-19:**
+- **RNF-10:** El software debe seguir una arquitectura distribuida.
+- **RNF-11:** El software debe incluir al menos dos componentes diferentes de tipo presentación.
+- **RNF-12:** El front-end web debe seguir una subarquitectura SSR (Server-Side Rendering).
+- **RNF-13:** El software debe incluir al menos 4 componentes de tipo lógico.
+- **RNF-14:** El software debe incluir al menos un componente que permita la comunicación/orquestación entre los componentes lógicos.
+- **RNF-15:** El software debe incluir al menos 4 componentes del tipo de datos (incluyendo bases de datos relacionales y no relacionales).
+- **RNF-16:** El software debe incluir al menos un componente que sea responsable de manejar procesos asincrónicos dentro del sistema.
+- **RNF-17:** El software debe incluir al menos dos tipos diferentes de conectores basados en HTTP.
+- **RNF-18:** El software debe construirse usando al menos 5 lenguajes de programación diferentes de proposito general.
+- **RNF-19:** El desplieugue del software debe ser orientado a contenedores.
 
 ## Estructura arquitectónica
 ### Estructura de componentes y conectores
 ---
 #### C&C View
-<img width="2238" height="1698" alt="image" src="https://github.com/user-attachments/assets/10233695-bb2a-411b-922c-834fad520e5b" />
+<div align="center"><img width="80%" height="80%" alt="image" src="https://github-production-user-asset-6210df.s3.amazonaws.com/143036159/506172372-10233695-bb2a-411b-922c-834fad520e5b.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20251027%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251027T230024Z&X-Amz-Expires=300&X-Amz-Signature=baeb990de72f1b8e3ebc76e5ed2c2d25e15c7553d012099a1cc1953c1d8aa486&X-Amz-SignedHeaders=host" /></div>
 
 #### Layered View
-<img width="1295" height="1980" alt="image" src="https://github.com/user-attachments/assets/e238ee79-6bf8-4a4f-84c0-5cf85d70242d" />
+<div align="center"><img width="80%" alt="image" src="https://github-production-user-asset-6210df.s3.amazonaws.com/143036159/506176115-e238ee79-6bf8-4a4f-84c0-5cf85d70242d.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20251027%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251027T230638Z&X-Amz-Expires=300&X-Amz-Signature=e7e15e8ed775c97062cffba8070d7c7135869384ebff8371723d714e811188d5&X-Amz-SignedHeaders=host" /></div>
 
 #### Deployment View
-<img width="3304" height="1997" alt="Blank diagram - Page 1" src="https://github.com/user-attachments/assets/a37b41c8-8c9f-408d-b7bd-966b1f58776a" />
+<div align="center"><img width="80%" alt="Blank diagram - Page 1" src="https://github-production-user-asset-6210df.s3.amazonaws.com/143036159/506242026-a37b41c8-8c9f-408d-b7bd-966b1f58776a.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20251027%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251027T230841Z&X-Amz-Expires=300&X-Amz-Signature=37f7cef0d8cb080a470f3daa1a412427bdb763ec82abef92ed668e6970239457&X-Amz-SignedHeaders=host" /></div>
 
 #### Decomposition View
-<img width="1164" height="1432" alt="image" src="https://github.com/user-attachments/assets/4b5a3a8a-a8ed-4f8d-b16c-bd2aed4c2a72" />
+<div align="center"><img width="80%" alt="image" src="https://github-production-user-asset-6210df.s3.amazonaws.com/143036159/506176222-4b5a3a8a-a8ed-4f8d-b16c-bd2aed4c2a72.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20251027%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251027T230954Z&X-Amz-Expires=300&X-Amz-Signature=4a519e9ed9d857eab986cf3968577adcfc697b2b2e316e102ee49444deb6deb9&X-Amz-SignedHeaders=host" /></div>
 
 ## Prototipo
 ## 🚀 Guía de Instalación y Ejecución
