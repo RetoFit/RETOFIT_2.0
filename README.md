@@ -1,10 +1,21 @@
 # RETOFIT 2.0 🏋️‍♂️
 
 Bienvenido al repositorio oficial del proyecto RETOFIT 2.0. Este es un monorepo que contiene la aplicación completa, incluyendo el frontend y todos los microservicios del backend.
+## Equipo
+
+### Nombre del equipo: 
+**Retofit**
+
+### Miembros:
+- **Cristhian Alarcón**
+- **Andres Caro**
+- **Anderson Mateus**
+- **Anderson David Morales Chila**
+- **Daniel Ochoa**
 
 ## 📜 Descripción
 
-RETOFIT es una plataforma diseñada para [**aquí puedes añadir una breve descripción del objetivo del proyecto, por ejemplo: "gestionar y gamificar las actividades físicas de los usuarios"**]. La arquitectura está basada en microservicios para garantizar la escalabilidad y mantenibilidad del sistema.
+RETOFIT es una plataforma diseñada para ayudar y hacer un seguimiento a los ejercicios físicos de un usuario. Además, se intenta incentivar un mayor ejercicio físico con retos, logros y la creación de comunidades. La arquitectura está basada en microservicios para garantizar la escalabilidad y mantenibilidad del sistema.
 
 ## 💻 Pila Tecnológica
 
@@ -12,6 +23,54 @@ RETOFIT es una plataforma diseñada para [**aquí puedes añadir una breve descr
 -   **Backend:** [Python](https://www.python.org/) con [FastAPI](https://fastapi.tiangolo.com/), Go, Node.js, PHp y Java.
 -   **Arquitectura:** Microservicios
 
+## Requisitos funcionales y no funcionales
+
+### Requisitos funcionales
+---
+- **RF-1:** Registrar nuevos usuarios mediante correo electrónico, redes sociales o autenticación federada (OAuth2, Google, Facebook).
+- **RF-2:** Permitir login seguro y recuperación de contraseña.
+- **RF-3:** Gestionar perfiles (edad, peso, altura, nivel de condición física).
+- **RF-4:** Guardar historial de entrenamientos y métricas de progreso.
+- **RF-5:** Crear y unirse a retos individuales o grupales.
+- **RF-6:** Mostrar rankings globales, por grupos y entre amigos.
+- **RF-7:** Notificar avances, asignar puntos y medallas por logros alcanzados.
+- **RF-8:** Registrar actividades físicas manualmente.
+- **RF-9:** Permitir compartir/publicar logros.
+- **RF-10:** Permitir interacción básica (likes, comentarios en logros).
+- **RF-11:** Administración de contenidos (retos oficiales, banners de campañas).
+- **RF-12:** Monitoreo de estadísticas de uso (usuarios activos, actividades registradas).
+
+### Requisitos no funcionales
+---
+- **RNF-1:** Integrar autenticación con JWT.
+- **RNF-2:** Generar token seguro de recuperación (con expiración).
+- **RNF-3:** Asegurar que las rutas /login y /password/* solo funcionen sobre HTTPS.
+- **RNF-4:** Añadir seguridad: solo el usuario dueño puede editar/consultar su perfil.
+- **RNF-5:** Validar consistencia de datos antes de guardarlos (ej. duración > 0, fecha válida).
+- **RNF-6:** Validar que un usuario no se pueda unir dos veces al mismo reto. 
+- **RNF-7:** Definir reglas para asignación de puntos (ej. 10 puntos por cada actividad registrada, 50 por completar un reto).
+- **RNF-8:** Definir reglas para asignación de medallas (ej. medalla por primer reto completado, medalla por 100 km acumulados).
+- **RNF-9:** Validar que un usuario no pueda seguirse a sí mismo.
+- **RNF-10:** Implementar validación de entrada para evitar spam (ej: límite de caracteres en comentarios).
+- **RNF-11:** Implementar paginación en la consulta de comentarios.
+- **RNF-12:** Implementar validaciones de fechas para la activación de retos y banners.
+
+## Estructura arquitectónica
+### Estructura de componentes y conectores
+---
+#### C&C View
+<img width="2238" height="1698" alt="image" src="https://github.com/user-attachments/assets/10233695-bb2a-411b-922c-834fad520e5b" />
+
+#### Layered View
+<img width="1295" height="1980" alt="image" src="https://github.com/user-attachments/assets/e238ee79-6bf8-4a4f-84c0-5cf85d70242d" />
+
+#### Deployment View
+<img width="3304" height="1997" alt="Blank diagram - Page 1" src="https://github.com/user-attachments/assets/a37b41c8-8c9f-408d-b7bd-966b1f58776a" />
+
+#### Decomposition View
+<img width="1164" height="1432" alt="image" src="https://github.com/user-attachments/assets/4b5a3a8a-a8ed-4f8d-b16c-bd2aed4c2a72" />
+
+## Prototipo
 ## 🚀 Guía de Instalación y Ejecución
 **========== Docker NO sirve ==========**
 
