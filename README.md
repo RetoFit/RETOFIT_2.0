@@ -183,6 +183,58 @@ En cuanto a los conectores, existen los siguientes:
 #### Layered View
 <div align="center"><img width="80%" alt="image" src="https://raw.githubusercontent.com/RetoFit/Image_Repository/refs/heads/main/vista_layer.png" /></div>
 
+# 1. Capa de Presentación (Presentation Layer)
+
+Es la interfaz con la que interactúa el usuario final. Se compone de las aplicaciones cliente que consumen la API.
+
+* **Front web (Next.js):** Aplicación web principal, construida con Next.js.
+* **Front mobil (...):** Aplicación móvil (iOS/Android).
+
+# 2. API Gateway
+
+Actúa como el **punto de entrada único** (Single Point of Entry) para todas las peticiones que vienen de la Capa de Presentación. Sus responsabilidades principales incluyen:
+
+* **Enrutamiento:** Redirige las peticiones al microservicio correspondiente en la Capa de Servicios.
+* **Agregación:** Puede combinar respuestas de múltiples servicios en una sola.
+* **Gestión Transversal:** Maneja tareas comunes como la autenticación inicial, el balanceo de carga y la limitación de tasa (rate limiting).
+
+# 3. Capa de Servicios (Services Layer)
+
+El núcleo de la lógica de negocio de la aplicación. Está dividida en microservicios independientes, cada uno enfocado en una única responsabilidad de negocio.
+
+* **Auth:** Maneja la autenticación (inicio de sesión, registro, gestión de tokens).
+* **User:** Gestiona toda la información y operaciones relacionadas con los perfiles de usuario.
+* **Activities:** Administra las actividades que los usuarios realizan.
+* **Posts:** Se encarga de las publicaciones (crear, leer, actualizar, borrar).
+* **Admin:** Contiene la lógica para las tareas de administración del sistema.
+* **Gamification:** Implementa la lógica de ludificación (puntos, insignias, niveles, tablas de clasificación).
+
+*Nota: Los servicios pueden comunicarse entre sí (como se indica entre `User` y `Activities`) para operaciones que requieren datos de diferentes dominios.*
+
+# 4. Capa de Datos (Data Layer)
+
+Gestiona la persistencia de los datos. Esta arquitectura sigue el patrón **"Database per Service"** (Base de Datos por Servicio), lo que significa que cada microservicio es dueño de sus propios datos y tiene su propia base de datos.
+
+Esto asegura que los servicios estén desacoplados y puedan evolucionar de forma independiente. Se utilizan dos tecnologías de bases de datos:
+
+# Cluster PostgreSQL (SQL)
+
+Utilizado para datos estructurados y relacionales:
+
+* **`retofit_auth_db`** (pertenece al servicio `Auth`)
+* **`retofit_users_db`** (pertenece al servicio `User`)
+* **`retofit_activities_db`** (pertenece al servicio `Activities`)
+* **`retofit_posts_db`** (pertenece al servicio `Posts`)
+* **`retofit_retos_db`** (pertenece a un servicio de Retos, probablemente `Activities` o `Gamification`)
+
+#### Cluster MongoDB (NoSQL)
+
+Utilizado para datos con mayor flexibilidad, esquemas dinámicos o alta volúmenes de escritura, como los de ludificación:
+
+* **`retofit_gamification_db`** (pertenece al servicio `Gamification`)
+
+---
+
 #### Deployment View
 <div align="center"><img width="80%" alt="image" src="https://github.com/user-attachments/assets/a0245f32-a43c-4133-bcf1-b23d236068b9" /></div>
 
