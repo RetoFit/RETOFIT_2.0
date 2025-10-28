@@ -71,13 +71,114 @@ RETOFIT es una plataforma diseñada para ayudar y hacer un seguimiento a los eje
 - **RNF-16:** El software debe incluir al menos un componente que sea responsable de manejar procesos asincrónicos dentro del sistema.
 - **RNF-17:** El software debe incluir al menos dos tipos diferentes de conectores basados en HTTP.
 - **RNF-18:** El software debe construirse usando al menos 5 lenguajes de programación diferentes de proposito general.
-- **RNF-19:** El desplieugue del software debe ser orientado a contenedores.
+- **RNF-19:** El despliegue del software debe ser orientado a contenedores.
 
 ## Estructura arquitectónica
 ### Estructura de componentes y conectores
 ---
 #### C&C View
-<div align="center"><img width="80%" height="80%" alt="image" src="https://github-production-user-asset-6210df.s3.amazonaws.com/143036159/506172372-10233695-bb2a-411b-922c-834fad520e5b.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20251027%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251027T230024Z&X-Amz-Expires=300&X-Amz-Signature=baeb990de72f1b8e3ebc76e5ed2c2d25e15c7553d012099a1cc1953c1d8aa486&X-Amz-SignedHeaders=host" /></div>
+<div align="center"><img width="80%" alt="image" src="https://raw.githubusercontent.com/RetoFit/Image_Repository/refs/heads/main/Blank%20diagram%20-%20Page%201.png" /></div>
+
+#### **Estilos y patrones arquitectónicos usados**
+
+#### Estilos arquitectónicos
+
+
+El estilo arquitectónico usado es el de ***microservicios*** ya que el sistema de software se divide en pequeños servicios o componentes de backend con una responsabilidad y función específicas. Consta de 6 de estos microservicios que se describiran más adelante.
+
+#### Patrones arquitectónicos
+
+El principal patrón usado fue el ***api gateway***, el cual consiste en que desde el exterior del sistema solo hay un único punto de acceso, que en este caso es el ***api gateway***.
+
+#### **Elementos y relaciones arquitectónicas**
+Consta de 15 componentes y 16 conectores. En este caso, se tienen 2 componentes de presentación:
+
+- **Frontend web:**
+
+    Interfaz gráfica del sistema que se usa desde el navegador web.
+
+- **Frontend móvil:**
+
+    Interfaz gráfica del que se usa específicamente desde dispositivos moviles. Por ende, esta mejor optimizada para estos dispositivos.
+
+Adicionalmente, se tiene un componente de comunicación:
+
+- **Api Gateway**:
+
+    Único punto de entrada al sistema desde el exterior, encargado de enrutar al microservicio al que se le ha pedido la solicitud. También, ayuda en la enrutación dentro del sistema cuando algunos servicios necesitan información de otros.
+
+Tiene 6 componentes de lógica de negocio:
+
+- **Auth:** 
+    
+    Este microservicio se encarga del registro, autenticación y autorización (login) del sistema.
+
+- **Users:**
+
+    Se encarga de la gestión de la base de datos de usuarios. En él, se registran y modifican los perfiles de los usuarios que tenga el sistema.
+
+- **Physical_activities:**
+
+    Se encarga de registrar las actividades físicas (como correr, ciclismo, caminar) de los usuarios registrados en el sistema.
+
+- **Admin:**
+
+    Se encarga de suspender o eliminar usuarios, ver las estadísticas de estos (por ejemplo, cuántos hay, qué condición física tienen, su género, etc). También, es el encargado de crear y mostrar los retos dentro de la plataforma.
+
+- **Gamification:**
+
+    Se encarga de asignar y calcular los puntos, de acuerdo a la actividad del usuario dentro del sistema.
+
+- **Posts:**
+
+    Servicio encargado de las publicaciones de los usuarios, asi como la interacción entre ellos (me gusta y responder).
+
+A su vez cada componente de lógica de negocio tiene su base de datos, es decir que hay 6 componentes de datos.
+
+- **retofit_auth_db:**
+
+    Tiene la información de las cuentas de los usuarios como el correo y la contraseña.
+
+- **retofit_users_db:**
+
+    Tiene la información de los perfiles de los usuarios con datos como la edad, estado físico, deporte favorito, etc.
+
+- **retofit_activities_db:**
+
+    Tiene la información de las actividades físicas realizadas por el usuarrio como los kilómetros recorridos y en cuánto tiempo los recorrió.
+
+- **retofit_retos_db:**
+
+    Tiene la información de todos los retos creados por el administrador, asi como el porcentaje de avance de los usuarios.
+
+- **retofit_gamification_db:**
+
+    Tiene los puntos que tiene cada usuario por la realización de actividades.
+
+- **retofit_posts_db:**
+
+    Contiene la información relacionada al contenido de los posts, ya sea el texto escrito o la imagen compartida. Además de los *me gusta* y las respuestas hechas a cada post.
+
+En cuanto a los conectores, existen los siguientes: 
+
+- **HTTP:**
+
+    Conecta directamente el navegador con el frontend web.
+
+- **Rest:**
+
+    Existen 8 de estos conectores dentro del sistema, de los cuales 2 se utilizan para comunicarse los dos componentes de presentación con el ***Api Gateway***, y los 6 restantes para la comunicación entre el ***api gateway*** y cada uno de los microservicios.
+
+- **TCP:** 
+
+    Los conectores TCP, se usaron para comunicar cada microservicio con su base de datos. Cada lenguaje utilizó su propio controlador para la respectiva base de datos.
+
+- **gRPC:**
+
+    Este conector se utilizó para realizar una petición desde el microservicio ***Physical_activities*** directamente hacia el microservicio ***Users***. Esto se hizó para confirmar que el usuario exista realmente en la base de datos.
+
+
+---
 
 #### Layered View
 <div align="center"><img width="80%" alt="image" src="https://github-production-user-asset-6210df.s3.amazonaws.com/143036159/506176115-e238ee79-6bf8-4a4f-84c0-5cf85d70242d.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20251027%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251027T230638Z&X-Amz-Expires=300&X-Amz-Signature=e7e15e8ed775c97062cffba8070d7c7135869384ebff8371723d714e811188d5&X-Amz-SignedHeaders=host" /></div>
