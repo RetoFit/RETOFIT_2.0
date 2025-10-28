@@ -236,8 +236,7 @@ Utilizado para datos con mayor flexibilidad, esquemas dinámicos o alta volúmen
 ---
 
 #### Deployment View
-<div align="center"><img width="80%" alt="image" src="https://github.com/user-attachments/assets/a361aff0-a6c4-4013-89f6-4e7a912b9764" /></div>
-
+<div align="center"><img width="80%" alt="image" src="https://github.com/user-attachments/assets/13c46fc3-7977-4e9a-b7e1-bdf876c3e592" /></div>
 
 #### Description of architectural patterns used
 
