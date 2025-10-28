@@ -417,12 +417,11 @@ Usuario (Navegador) → [HTTP/HTTPS] → Front web → [REST] → API Gateway �
 
 ---
 
-#### Decomposition View
+## Decomposition View
 <div align="center"><img width="80%" alt="image" src="https://github-production-user-asset-6210df.s3.amazonaws.com/143036159/506176222-4b5a3a8a-a8ed-4f8d-b16c-bd2aed4c2a72.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20251027%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251027T230954Z&X-Amz-Expires=300&X-Amz-Signature=4a519e9ed9d857eab986cf3968577adcfc697b2b2e316e102ee49444deb6deb9&X-Amz-SignedHeaders=host" /></div>
 
----
 
-## 🎨 FRONT
+#### 🎨 FRONT
 
 El **Front** representa las interfaces de usuario del sistema, permitiendo la interacción con las funcionalidades expuestas por los microservicios.
 
@@ -434,9 +433,8 @@ El **Front** representa las interfaces de usuario del sistema, permitiendo la in
 
 Ambas interfaces se comunican con el **API Gateway**, que enruta las solicitudes hacia los servicios internos.
 
----
 
-## ⚙️ SERVICES
+#### ⚙️ SERVICES
 
 El sistema está compuesto por varios microservicios independientes, cada uno con una responsabilidad específica:
 
@@ -451,9 +449,8 @@ El sistema está compuesto por varios microservicios independientes, cada uno co
 
 Cada servicio puede ejecutarse de forma independiente y se comunica con los demás a través del **API Gateway**.
 
----
 
-## 🌐 API GATEWAY
+#### 🌐 API GATEWAY
 
 El **API Gateway** actúa como punto de entrada único para todas las solicitudes externas.  
 Su función principal es redirigir, filtrar y centralizar la comunicación entre el **Front** y los distintos **microservicios**.
