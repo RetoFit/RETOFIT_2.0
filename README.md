@@ -184,7 +184,7 @@ En cuanto a los conectores, existen los siguientes:
 <div align="center"><img width="80%" alt="image" src="https://raw.githubusercontent.com/RetoFit/Image_Repository/refs/heads/main/vista_layer.png" /></div>
 
 #### Deployment View
-<div align="center"><img width="80%" alt="Blank diagram - Page 1" src="https://github-production-user-asset-6210df.s3.amazonaws.com/143036159/506242026-a37b41c8-8c9f-408d-b7bd-966b1f58776a.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20251027%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251027T230841Z&X-Amz-Expires=300&X-Amz-Signature=37f7cef0d8cb080a470f3daa1a412427bdb763ec82abef92ed668e6970239457&X-Amz-SignedHeaders=host" /></div>
+<div align="center"><img width="80%" alt="image" src="https://github.com/user-attachments/assets/a0245f32-a43c-4133-bcf1-b23d236068b9" /></div>
 
 #### Decomposition View
 <div align="center"><img width="80%" alt="image" src="https://github-production-user-asset-6210df.s3.amazonaws.com/143036159/506176222-4b5a3a8a-a8ed-4f8d-b16c-bd2aed4c2a72.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20251027%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251027T230954Z&X-Amz-Expires=300&X-Amz-Signature=4a519e9ed9d857eab986cf3968577adcfc697b2b2e316e102ee49444deb6deb9&X-Amz-SignedHeaders=host" /></div>
