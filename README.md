@@ -180,17 +180,17 @@ En cuanto a los conectores, existen los siguientes:
 
 ---
 
-#### Layered View
+## Layered View
 <div align="center"><img width="80%" alt="image" src="https://raw.githubusercontent.com/RetoFit/Image_Repository/refs/heads/main/vista_layer.png" /></div>
 
-# 1. Capa de Presentación (Presentation Layer)
+### Capa de Presentación (Presentation Layer)
 
 Es la interfaz con la que interactúa el usuario final. Se compone de las aplicaciones cliente que consumen la API.
 
 * **Front web (Next.js):** Aplicación web principal, construida con Next.js.
 * **Front mobil (...):** Aplicación móvil (iOS/Android).
 
-# 2. API Gateway
+### API Gateway
 
 Actúa como el **punto de entrada único** (Single Point of Entry) para todas las peticiones que vienen de la Capa de Presentación. Sus responsabilidades principales incluyen:
 
@@ -198,7 +198,7 @@ Actúa como el **punto de entrada único** (Single Point of Entry) para todas la
 * **Agregación:** Puede combinar respuestas de múltiples servicios en una sola.
 * **Gestión Transversal:** Maneja tareas comunes como la autenticación inicial, el balanceo de carga y la limitación de tasa (rate limiting).
 
-# 3. Capa de Servicios (Services Layer)
+### Capa de Servicios (Services Layer)
 
 El núcleo de la lógica de negocio de la aplicación. Está dividida en microservicios independientes, cada uno enfocado en una única responsabilidad de negocio.
 
@@ -211,13 +211,13 @@ El núcleo de la lógica de negocio de la aplicación. Está dividida en microse
 
 *Nota: Los servicios pueden comunicarse entre sí (como se indica entre `User` y `Activities`) para operaciones que requieren datos de diferentes dominios.*
 
-# 4. Capa de Datos (Data Layer)
+### Capa de Datos (Data Layer)
 
 Gestiona la persistencia de los datos. Esta arquitectura sigue el patrón **"Database per Service"** (Base de Datos por Servicio), lo que significa que cada microservicio es dueño de sus propios datos y tiene su propia base de datos.
 
 Esto asegura que los servicios estén desacoplados y puedan evolucionar de forma independiente. Se utilizan dos tecnologías de bases de datos:
 
-# Cluster PostgreSQL (SQL)
+#### Cluster PostgreSQL (SQL)
 
 Utilizado para datos estructurados y relacionales:
 
