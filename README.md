@@ -426,10 +426,10 @@ Usuario (Navegador) → [HTTP/HTTPS] → Front web → [REST] → API Gateway �
 El **Front** representa las interfaces de usuario del sistema, permitiendo la interacción con las funcionalidades expuestas por los microservicios.
 
 - **FRONT WEB**  
-  Interfaz web desarrollada (por ejemplo con **Next.js** o **React**) para administración y uso general desde navegadores.
+  Interfaz web desarrollada (**Next.js**) para administración y uso general desde navegadores.
 
 - **FRONT MÓVIL**  
-  Aplicación móvil (por ejemplo desarrollada en **React Native** o **Flutter**) para usuarios finales.
+  Aplicación móvil (**Dart**) para usuarios finales.
 
 Ambas interfaces se comunican con el **API Gateway**, que enruta las solicitudes hacia los servicios internos.
 
@@ -441,7 +441,7 @@ El sistema está compuesto por varios microservicios independientes, cada uno co
 | Servicio | Descripción |
 |-----------|--------------|
 | **auth-service** | Maneja la autenticación y autorización de usuarios (login, registro, tokens JWT, etc.). |
-| **user-service** | Gestiona la información del perfil de usuario, roles y datos personales. |
+| **user-service** | Gestiona la información del perfil de usuario y datos personales. |
 | **physical_activities_service** | Registra y consulta actividades físicas realizadas por los usuarios. |
 | **posts-service** | Permite la creación, lectura y gestión de publicaciones o retos dentro de la plataforma. |
 | **admin-service** | Ofrece funcionalidades administrativas para la gestión general del sistema. |
