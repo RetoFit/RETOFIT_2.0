@@ -236,7 +236,8 @@ Utilizado para datos con mayor flexibilidad, esquemas dinámicos o alta volúmen
 ---
 
 #### Deployment View
-<div align="center"><img width="80%" alt="image" src="https://github.com/user-attachments/assets/a0245f32-a43c-4133-bcf1-b23d236068b9" /></div>
+<div align="center"><img width="80%" alt="image" src="https://github.com/user-attachments/assets/a361aff0-a6c4-4013-89f6-4e7a912b9764" /></div>
+
 
 #### Description of architectural patterns used
 
@@ -418,7 +419,7 @@ Usuario (Navegador) → [HTTP/HTTPS] → Front web → [REST] → API Gateway �
 ---
 
 ## Decomposition View
-<div align="center"><img width="80%" alt="image" src="https://github-production-user-asset-6210df.s3.amazonaws.com/143036159/506176222-4b5a3a8a-a8ed-4f8d-b16c-bd2aed4c2a72.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20251027%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251027T230954Z&X-Amz-Expires=300&X-Amz-Signature=4a519e9ed9d857eab986cf3968577adcfc697b2b2e316e102ee49444deb6deb9&X-Amz-SignedHeaders=host" /></div>
+<div align="center"><img width="80%" alt="image" src="https://github.com/user-attachments/assets/8e98e040-9933-42a3-89da-af5e0bc062e3" /></div>
 
 
 #### 🎨 FRONT
