@@ -181,7 +181,7 @@ En cuanto a los conectores, existen los siguientes:
 ---
 
 #### Layered View
-<div align="center"><img width="80%" alt="image" src="https://github-production-user-asset-6210df.s3.amazonaws.com/143036159/506176115-e238ee79-6bf8-4a4f-84c0-5cf85d70242d.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20251027%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251027T230638Z&X-Amz-Expires=300&X-Amz-Signature=e7e15e8ed775c97062cffba8070d7c7135869384ebff8371723d714e811188d5&X-Amz-SignedHeaders=host" /></div>
+<div align="center"><img width="80%" alt="image" src="https://raw.githubusercontent.com/RetoFit/Image_Repository/refs/heads/main/vista_layer.png" /></div>
 
 #### Deployment View
 <div align="center"><img width="80%" alt="Blank diagram - Page 1" src="https://github-production-user-asset-6210df.s3.amazonaws.com/143036159/506242026-a37b41c8-8c9f-408d-b7bd-966b1f58776a.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20251027%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251027T230841Z&X-Amz-Expires=300&X-Amz-Signature=37f7cef0d8cb080a470f3daa1a412427bdb763ec82abef92ed668e6970239457&X-Amz-SignedHeaders=host" /></div>
