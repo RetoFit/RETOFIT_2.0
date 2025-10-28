@@ -420,273 +420,46 @@ Usuario (Navegador) → [HTTP/HTTPS] → Front web → [REST] → API Gateway �
 #### Decomposition View
 <div align="center"><img width="80%" alt="image" src="https://github-production-user-asset-6210df.s3.amazonaws.com/143036159/506176222-4b5a3a8a-a8ed-4f8d-b16c-bd2aed4c2a72.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20251027%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251027T230954Z&X-Amz-Expires=300&X-Amz-Signature=4a519e9ed9d857eab986cf3968577adcfc697b2b2e316e102ee49444deb6deb9&X-Amz-SignedHeaders=host" /></div>
 
-#### Description of architectural elements and relations
+---
 
-**1. Presentation Module**
+## 🎨 FRONT
 
-Este módulo agrupa todos los componentes responsables de la interfaz de usuario y la interacción con los usuarios finales.
+El **Front** representa las interfaces de usuario del sistema, permitiendo la interacción con las funcionalidades expuestas por los microservicios.
 
-**Elementos:**
+- **FRONT WEB**  
+  Interfaz web desarrollada (por ejemplo con **Next.js** o **React**) para administración y uso general desde navegadores.
 
-**a) Front web (Next.js)**
-- **Descripción:** Aplicación web desarrollada con Next.js que implementa Server-Side Rendering (SSR)
-- **Responsabilidades:**
-  - Renderizar interfaces de usuario responsivas
-  - Gestionar el estado de la aplicación cliente
-  - Realizar peticiones HTTP al API Gateway
-  - Validar datos de entrada del lado del cliente
-  - Implementar rutas y navegación de la aplicación
-- **Tecnología:** Next.js 14 + React + TypeScript
-- **Ubicación:** `/front`
-- **Componentes internos:**
-  - Páginas (dashboard, challenges, posts, profile)
-  - Componentes UI reutilizables
-  - Servicios de API (api.ts)
-  - Configuración de autenticación (auth.js)
+- **FRONT MÓVIL**  
+  Aplicación móvil (por ejemplo desarrollada en **React Native** o **Flutter**) para usuarios finales.
 
-**b) Front móvil**
-- **Descripción:** Aplicación móvil optimizada para dispositivos móviles (en desarrollo futuro)
-- **Responsabilidades:**
-  - Proveer experiencia de usuario nativa para dispositivos móviles
-  - Consumir los mismos endpoints que el front web
-  - Implementar características específicas de móviles (notificaciones push, geolocalización)
-- **Estado:** Planificado para desarrollo futuro
-
-**Relaciones del módulo Presentation:**
-- Se comunica únicamente con el API Gateway (no tiene acceso directo a Services)
-- Utiliza protocolo HTTP/HTTPS para todas las comunicaciones
-- Implementa autenticación basada en JWT recibidos del backend
+Ambas interfaces se comunican con el **API Gateway**, que enruta las solicitudes hacia los servicios internos.
 
 ---
 
-**2. Services Module**
+## ⚙️ SERVICES
 
-Este módulo contiene todos los microservicios que implementan la lógica de negocio del sistema. Cada servicio es independiente y autónomo.
+El sistema está compuesto por varios microservicios independientes, cada uno con una responsabilidad específica:
 
-**Elementos:**
+| Servicio | Descripción |
+|-----------|--------------|
+| **auth-service** | Maneja la autenticación y autorización de usuarios (login, registro, tokens JWT, etc.). |
+| **user-service** | Gestiona la información del perfil de usuario, roles y datos personales. |
+| **physical_activities_service** | Registra y consulta actividades físicas realizadas por los usuarios. |
+| **posts-service** | Permite la creación, lectura y gestión de publicaciones o retos dentro de la plataforma. |
+| **admin-service** | Ofrece funcionalidades administrativas para la gestión general del sistema. |
+| **gamification-service** | Administra la lógica de gamificación: puntos, niveles, recompensas y ranking de usuarios. |
 
-**a) Auth**
-- **Descripción:** Microservicio de autenticación y autorización
-- **Responsabilidades:**
-  - Registro de usuarios (RF-1)
-  - Autenticación con JWT (RNF-1)
-  - Gestión de sesiones
-  - Recuperación de contraseñas (RF-2, RNF-2)
-  - Validación de tokens
-- **Tecnología:** Python + FastAPI
-- **Puerto:** 8001
-- **Base de datos asociada:** retofit_auth_db
-- **Endpoints principales:**
-  - `POST /register` - Registro de usuarios
-  - `POST /login` - Autenticación
-  - `POST /password-reset` - Recuperación de contraseña
-  - `POST /verify-token` - Validación de tokens
-
-**b) User**
-- **Descripción:** Microservicio de gestión de perfiles de usuario
-- **Responsabilidades:**
-  - Gestión de perfiles (RF-3)
-  - Almacenamiento de datos personales (edad, peso, altura, nivel de condición física)
-  - Historial de entrenamientos (RF-4)
-  - Métricas de progreso de usuarios
-  - Sincronización con Auth Service
-- **Tecnología:** Python + FastAPI
-- **Puerto:** 8004
-- **Base de datos asociada:** retofit_users_db
-- **Endpoints principales:**
-  - `GET /me` - Obtener perfil del usuario actual
-  - `PUT /profile` - Actualizar perfil
-  - `GET /analytics/users` - Estadísticas de usuarios
-
-**c) Activities**
-- **Descripción:** Microservicio de gestión de actividades físicas
-- **Responsabilidades:**
-  - Registro de actividades físicas (RF-7)
-  - Almacenamiento de métricas (distancia, tiempo, calorías, tipo de actividad)
-  - Validación de consistencia de datos (RNF-5)
-  - Comunicación con User Service vía gRPC para validación
-  - Notificación a Gamification Service de nuevas actividades
-- **Tecnología:** Go + Gin Framework
-- **Puerto:** 8002
-- **Base de datos asociada:** retofit_activities_db
-- **Comunicación especial:** Implementa cliente gRPC para validar usuarios
-- **Endpoints principales:**
-  - `POST /activities` - Registrar actividad
-  - `GET /activities/user/:id` - Obtener actividades de un usuario
-  - `GET /activities/stats` - Estadísticas de actividades
-
-**d) Posts**
-- **Descripción:** Microservicio de publicaciones y red social
-- **Responsabilidades:**
-  - Crear y gestionar publicaciones (RF-8)
-  - Gestionar interacciones sociales: likes y comentarios (RF-9)
-  - Almacenar contenido multimedia
-  - Moderar contenido
-  - Feed de publicaciones personalizado
-- **Tecnología:** Node.js + TypeScript + Express + Prisma ORM
-- **Puerto:** 8005
-- **Base de datos asociada:** retofit_posts_db
-- **Endpoints principales:**
-  - `POST /posts` - Crear publicación
-  - `GET /posts` - Listar publicaciones
-  - `POST /posts/:id/like` - Dar like
-  - `POST /posts/:id/comments` - Comentar
-
-**e) Admin**
-- **Descripción:** Microservicio de administración del sistema
-- **Responsabilidades:**
-  - Crear y gestionar retos (RF-5, RF-10)
-  - Administración de contenidos (banners, campañas)
-  - Monitoreo de estadísticas del sistema (RF-11)
-  - Dashboard administrativo
-  - Gestión de progreso de usuarios en retos
-  - Comunicación con Auth y User services para obtener datos
-- **Tecnología:** PHP + Slim Framework + Guzzle HTTP Client
-- **Puerto:** 8006
-- **Base de datos asociada:** retofit_retos_db
-- **Comunicación especial:** Usa Guzzle para comunicarse con otros servicios vía HTTP
-- **Endpoints principales:**
-  - `POST /admin/challenges` - Crear reto
-  - `GET /admin/challenges` - Listar retos
-  - `GET /admin/dashboard-stats` - Estadísticas del sistema
-  - `PATCH /admin/challenges/:id/progress/:userId` - Actualizar progreso
-
-**f) Gamification**
-- **Descripción:** Microservicio de gamificación y logros
-- **Responsabilidades:**
-  - Asignar y calcular puntos (RF-6, RNF-7)
-  - Otorgar medallas y logros (RF-6, RNF-8)
-  - Calcular rankings y leaderboards
-  - Procesamiento asíncrono de eventos (RNF-16)
-  - Notificaciones de avances
-- **Tecnología:** Python + FastAPI
-- **Puerto:** 8003
-- **Base de datos asociada:** retofit_gamification_db (MongoDB)
-- **Comunicación especial:** Recibe eventos de Activities Service
-- **Endpoints principales:**
-  - `GET /users/:id/points` - Obtener puntos de usuario
-  - `GET /users/:id/achievements` - Obtener logros
-  - `POST /process-activity` - Procesar actividad para gamificación
-  - `GET /leaderboard` - Ranking de usuarios
-
-**Relaciones entre servicios:**
-- **Auth ↔ User:** Sincronización al crear cuentas
-- **Activities → User:** Validación de existencia de usuarios (gRPC)
-- **Activities → Gamification:** Notificación de actividades para asignar puntos
-- **Admin → Auth:** Consulta de usuarios registrados
-- **Admin → User:** Estadísticas de perfiles de usuarios
-- Todos los servicios se comunican vía REST API excepto Activities-User que usa gRPC
+Cada servicio puede ejecutarse de forma independiente y se comunica con los demás a través del **API Gateway**.
 
 ---
 
-**3. Data Module**
+## 🌐 API GATEWAY
 
-Este módulo contiene todos los componentes de persistencia de datos, organizados en dos clusters según la tecnología de base de datos.
+El **API Gateway** actúa como punto de entrada único para todas las solicitudes externas.  
+Su función principal es redirigir, filtrar y centralizar la comunicación entre el **Front** y los distintos **microservicios**.
 
-**a) PostgreSQL Cluster**
-
-Agrupa todas las bases de datos relacionales del sistema.
-
-**Elementos:**
-
-**1. retofit_activities_db**
-- **Asociado a:** Activities Service
-- **Tipo:** Base de datos relacional
-- **Contenido:**
-  - Tabla `activities`: Registros de actividades físicas
-  - Tabla `activity_types`: Tipos de actividades (correr, ciclismo, natación)
-  - Campos: id, user_id, type, distance, duration, calories, date
-- **Esquema:** Relaciones con usuarios para tracking de actividades
-
-**2. retofit_retos_db**
-- **Asociado a:** Admin Service
-- **Tipo:** Base de datos relacional
-- **Contenido:**
-  - Tabla `challenges`: Retos creados
-  - Tabla `progress_logs`: Progreso de usuarios en retos
-  - Campos de challenges: id, name, description, type, target, unit, start_date, end_date
-  - Validaciones de fechas (RNF-9)
-- **Esquema:** Relaciones entre retos y progreso de usuarios
-
-**3. retofit_auth_db**
-- **Asociado a:** Auth Service
-- **Tipo:** Base de datos relacional
-- **Contenido:**
-  - Tabla `users`: Credenciales de autenticación
-  - Tabla `tokens`: Tokens de sesión y recuperación
-  - Campos: id, email, password_hash, created_at, last_login
-  - Tokens con expiración (RNF-2)
-- **Seguridad:** Contraseñas hasheadas, tokens con TTL
-
-**4. retofit_users_db**
-- **Asociado a:** User Service
-- **Tipo:** Base de datos relacional
-- **Contenido:**
-  - Tabla `profiles`: Perfiles de usuarios
-  - Tabla `training_history`: Historial de entrenamientos
-  - Campos: id, user_id, age, weight, height, fitness_level, favorite_sport
-  - Métricas de progreso
-- **Esquema:** Relaciones con historial y estadísticas
-
-**5. retofit_posts_db**
-- **Asociado a:** Posts Service
-- **Tipo:** Base de datos relacional
-- **Contenido:**
-  - Tabla `posts`: Publicaciones de usuarios
-  - Tabla `likes`: Likes en publicaciones
-  - Tabla `comments`: Comentarios en publicaciones
-  - Campos: id, user_id, content, image_url, created_at
-- **Esquema:** Relaciones entre posts, likes y comentarios
-
-**Proveedor:** AWS RDS (PostgreSQL 14)
-
-**Conectores:** Cada servicio usa su driver específico:
-- Python services: `psycopg2`
-- Node.js service: `pg` (vía Prisma)
-- PHP service: `PDO PostgreSQL`
-- Go service: `pq`
-
-**b) MongoDB Cluster**
-
-Contiene la base de datos NoSQL para datos no estructurados.
-
-**Elementos:**
-
-**1. retofit_gamification_db**
-- **Asociado a:** Gamification Service
-- **Tipo:** Base de datos NoSQL (MongoDB)
-- **Contenido:**
-  - Colección `user_points`: Puntos de usuarios
-  - Colección `achievements`: Logros desbloqueados
-  - Colección `events`: Eventos de procesamiento asíncrono (RNF-16)
-  - Colección `leaderboard`: Rankings calculados
-  - Documentos con estructura flexible para diferentes tipos de logros
-- **Ventaja:** Permite almacenar estructuras de datos variables para diferentes tipos de logros y eventos
-- **Procesamiento:** Implementa cola de eventos para procesamiento asíncrono
-
-**Proveedor:** Railway (MongoDB Atlas)
-
-**Conector:** `pymongo` desde Python
-
----
-
-**Relaciones entre módulos:**
-
-1. **Presentation → Services:**
-   - Todas las peticiones pasan por el API Gateway
-   - Protocolo: REST over HTTP/HTTPS
-   - Formato: JSON
-
-2. **Services → Data:**
-   - Cada servicio tiene acceso exclusivo a su base de datos
-   - No hay acceso cruzado entre bases de datos
-   - Protocolo: TCP con drivers específicos
-   - Cada servicio gestiona sus propias migraciones y esquemas
-
-3. **Services ↔ Services:**
-   - REST API para la mayoría de comunicaciones
-   - gRPC para Activities → User (validación rápida)
-   - HTTP Client (Guzzle) para Admin → Auth/User
+- Carpeta `target/`  
+  Contiene el archivo compilado `api-gateway-1.0.0.0.jar`, que puede ejecutarse para iniciar el Gateway.
 
 ---
 
