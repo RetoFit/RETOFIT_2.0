@@ -3,7 +3,7 @@ const USER_API = process.env.NEXT_PUBLIC_USER_API_URL;
 const GAMIFICATION_API = process.env.NEXT_PUBLIC_GAMIFICATION_API_URL;
 const POSTS_API = process.env.NEXT_PUBLIC_POSTS_API_URL;
 const ACTIVITIES_API = process.env.NEXT_PUBLIC_ACTIVITIES_API_URL;
-const API_URL = process.env.NEXT_PUBLIC_ADMIN_API_URL || 'http://localhost:8006/admin';
+const API_URL = process.env.NEXT_PUBLIC_ADMIN_API_URL || 'http://127.0.0.1:8080/api/admin';
 
 import type { Challenge, ProgressLog } from '@/lib/data';
 // --- Funciones para el Servicio de Autenticación ---
@@ -237,7 +237,17 @@ export async function createActivity(userId: number, activityData: {
 
 export async function getChallenges() {
   // Hacemos una llamada fetch normal porque este endpoint es público
-  const response = await fetch(`${API_URL}/challenges`);
+  //try {
+  //  const data = await getAdminChallenges();
+  //  setChallenges(data);
+  //} catch (err: any) {
+  //  toast({ title: "Error", description: err.message, variant: "destructive" });
+  //} finally {
+  //  setListIsLoading(false);
+  //}
+  const response = await fetch("http://api-gateway:8080/api/admin/challenges");
+
+  console.log("Response challenges: ", response);
 
   if (!response.ok) {
     // Si hay un error en la respuesta de la API, lo lanzamos
@@ -249,7 +259,7 @@ export async function getChallenges() {
 
 export async function getChallengeById(id: string): Promise<Challenge | null> {
   try {
-    const res = await fetch(`${API_URL}/challenges/${id}`);
+    const res = await fetch(`http://api-gateway:8080/api/admin/challenges/${id}`);
 
     if (!res.ok) {
       if (res.status === 404) {

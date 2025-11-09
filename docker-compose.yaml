@@ -1,130 +1,153 @@
 services:
-  frontend:
-    build: ./front
-    container_name: frontend
+  # API Gateway (Java/Spring Cloud Gateway)
+  api-gateway:
+    build:
+      context: ./api_gateway_2.1
+    container_name: api-gateway
     ports:
-      - "3000:3000"
+      - "8080:8080"
     depends_on:
       - auth-service
       - activities-service
       - gamification-service
-      - user-service
-      - admin-sevice
+      - users-service
       - posts-service
-
-    volumes:
-      - ./front:/app
-      - /app/node_modules
-      - /app/.next 
-    environment:
-      NEXT_PUBLIC_AUTH_API_URL: "http://127.0.0.1:8001/auth"
-      NEXT_PUBLIC_USER_API_URL: "http://127.0.0.1:8004/users"
-      NEXT_PUBLIC_GAMIFICATION_API_URL: "http://127.0.0.1:8003/gamification"
-      NEXT_PUBLIC_ACTIVITIES_API_URL: "http://127.0.0.1:8002/activities"
-      NEXT_PUBLIC_POSTS_API_URL: "http://127.0.0.1:8005/posts"
-      NEXT_PUBLIC_ADMIN_API_URL: "http://localhost:8006/admin"
-      NEXT_PUBLIC_FIREBASE_API_KEY: "AIzaSyBahlztUM-HxBN5chRXm4bg3_tfac327qc"
-      NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: "retofit-65d7f.firebaseapp.com"
-      NEXT_PUBLIC_FIREBASE_PROJECT_ID: "retofit-65d7f"
-      NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: "retofit-65d7f.firebasestorage.app"
-      NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: "84767435359"
-      NEXT_PUBLIC_FIREBASE_APP_ID: "1:84767435359:web:fd2e56a651adb79d0e89ea"
-      NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: "G-1P33Y9WDD2"
-    # depends_on removido ya que no hay api-gateway
-    command: npm run dev
+      - admin-service
     networks:
-      - app-network
+      - retofit-network
 
-  admin-sevice:
-    build: ./services/admin-service
-    container_name: admin-service
+  frontend:
+    build:
+      context: ./front
+    container_name: frontend
     ports:
-      - "8006:8000"
-    # environment:
-    networks:
-      - app-network
-
-  posts-service:
-    build: ./services/posts-service
-    container_name: posts-service
-    ports:
-      - "8005:8000"
+      - "3000:3000"
+    depends_on:
+      - api-gateway
     environment:
-      DATABASE_URL: "postgresql://postgres:Retofit2025@retofit.cd66iick6o60.us-east-2.rds.amazonaws.com:5432/retofit_posts?sslmode=no-verify"
-      SECRET_KEY: "f40cf292b97e6ec1e40e6a376e035ee9ebd9369c9dc233c474216ec0fe1b54aa"
-      ALGORITHM: "HS256"
-      PORT: "8000"
-      NODE_ENV: "development"
-      API_BASE_URL: "http://localhost:8005"
-      MAX_FILE_SIZE: "5242880"
-      UPLOAD_DIR: "./uploads"
-      CLOUDINARY_CLOUD_NAME: "dpsncmfxz"
-      CLOUDINARY_API_KEY: "848674259162179"
-      CLOUDINARY_API_SECRET: "6zQbbB8L-cZQbKT1MLIkuKKuqFg" 
+      - GEMINI_API_KEY=
+      - NEXT_PUBLIC_PHYSICAL_ACTIVITIES_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_AUTH_API_URL=http://127.0.0.1:8080/api/auth
+      - NEXT_PUBLIC_USER_API_URL=http://127.0.0.1:8080/api/users
+      - NEXT_PUBLIC_GAMIFICATION_API_URL=http://127.0.0.1:8080/api/gamification
+      - NEXT_PUBLIC_ACTIVITIES_API_URL=http://127.0.0.1:8080/api/activities
+      - NEXT_PUBLIC_POSTS_API_URL=http://127.0.0.1:8080/api/posts
+      - NEXT_PUBLIC_ADMIN_API_URL=http://127.0.0.1:8080/api/admin 
+      - NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyBahlztUM-HxBN5chRXm4bg3_tfac327qc
+      - NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=retofit-65d7f.firebaseapp.com
+      - NEXT_PUBLIC_FIREBASE_PROJECT_ID=retofit-65d7f
+      - NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=retofit-65d7f.firebasestorage.app
+      - NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=84767435359
+      - NEXT_PUBLIC_FIREBASE_APP_ID=1:84767435359:web:fd2e56a651adb79d0e89ea
+      - NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-1P33Y9WDD2
+      - GEMINI_API_KEY=AIzaSyCQvZqvJV3vxdGgWwX_rRTahb8bvQHf2p8
     networks:
-      - app-network
-
+      - retofit-network
+  
+  # Auth Service (Python/FastAPI - puerto 8001)
   auth-service:
-    build: ./services/auth-service
+    build:
+      context: ./services/auth-service
     container_name: auth-service
     ports:
-      - "8001:8000"  
+      - "8001:8000"
     environment:
-      PORT: "8000"
-      MAIL_USERNAME: "retofitapp@gmail.com"
-      MAIL_PASSWORD: "ubid jqul mzmg nnwh"
-      MAIL_FROM: "retofitapp@gmail.com"
-      SECRET_KEY: "f40cf292b97e6ec1e40e6a376e035ee9ebd9369c9dc233c474216ec0fe1b54aa"
-      ALGORITHM: "HS256"
-      DATABASE_URL: "postgresql://postgres:Retofit2025@retofit.cd66iick6o60.us-east-2.rds.amazonaws.com:5432/retofit_auth" 
-      MAIL_PORT: "587"
-      MAIL_SERVER: "smtp.gmail.com"
-      MAIL_USE_TLS: true
-      MAIL_USE_SSL: false
-      BACKEND_URL: "http://localhost:8000"
-      FRONTEND_URL: "http://localhost:3000" 
+      - DATABASE_URL=postgresql://postgres:Retofit2025@retofit.cd66iick6o60.us-east-2.rds.amazonaws.com:5432/retofit_auth
+      - MAIL_USERNAME=retofitapp@gmail.com
+      - MAIL_PASSWORD=ubid jqul mzmg nnwh
+      - MAIL_FROM=retofitapp@gmail.com
+      - MAIL_PORT=587
+      - MAIL_SERVER=smtp.gmail.com
+      - MAIL_USE_TLS=true
+      - MAIL_USE_SSL=false
+      - SECRET_KEY=f40cf292b97e6ec1e40e6a376e035ee9ebd9369c9dc233c474216ec0fe1b54aa
+      - ALGORITHM=HS256
+      - BACKEND_URL=http://localhost:8000
+      - FRONTEND_URL=http://localhost:3000 
     networks:
-      - "app-network"
+      - retofit-network
 
+  # Activities Service (Go - puerto 8002)
   activities-service:
-    build: ./services/physical_activities_service
+    build:
+      context: ./services/physical_activities_service
     container_name: activities-service
     ports:
       - "8002:8000"
     environment:
-      PORT: "8000"
-      ENV: "development"
-      SERVER_ADDRESS: "0.0.0.0:8000"
-      CORS_ALLOWED_ORIGIN: "*"
-      DB_DRIVER: "postgres"
-      DB_SOURCE: "postgresql://postgres:Retofit2025@retofit.cd66iick6o60.us-east-2.rds.amazonaws.com:5432/retofit_activities"
+      - ENV=development
+      - SERVER_ADDRESS=activities-service:8002
+      - CORS_ALLOWED_ORIGIN=127.0.0.1:3000
+      - DB_DRIVER=postgres
+      - DB_SOURCE=postgresql://postgres:Retofit2025@retofit.cd66iick6o60.us-east-2.rds.amazonaws.com:5432/retofit_activities
     networks:
-      - "app-network"
+      - retofit-network
 
+  # Gamification Service (Python/FastAPI - puerto 8003)
   gamification-service:
-    build: ./services/gamification-service
+    build:
+      context: ./services/gamification-service
     container_name: gamification-service
     ports:
       - "8003:8000"
     environment:
-      PORT: "8000"
-      DATABASE_URL: "mongodb://mongo:wMssbdHQqDrJaPwUGqtqyfoqmPHvneJZ@gondola.proxy.rlwy.net:10201/retofit_gamification?authSource=admin"
+      - DATABASE_URL=mongodb://mongo:wMssbdHQqDrJaPwUGqtqyfoqmPHvneJZ@gondola.proxy.rlwy.net:10201/retofit_gamification?authSource=admin
     networks:
-      - "app-network"
+      - retofit-network
 
-  user-service:
-    build: ./services/user-service
-    container_name: user-service
+  # Users Service (Python/FastAPI - puerto 8004)
+  users-service:
+    build:
+      context: ./services/user-service
+    container_name: users-service
     ports:
       - "8004:8000"
+      - "50051:50051"
     environment:
-      PORT: "8000"
-      DATABASE_URL: "postgresql://postgres:Retofit2025@retofit.cd66iick6o60.us-east-2.rds.amazonaws.com:5432/retofit_users"
-      SECRET_KEY: "f40cf292b97e6ec1e40e6a376e035ee9ebd9369c9dc233c474216ec0fe1b54aa"
-      ALGORITHM: "HS256"
+      - DATABASE_URL=postgresql://postgres:Retofit2025@retofit.cd66iick6o60.us-east-2.rds.amazonaws.com:5432/retofit_users
+      - SECRET_KEY=f40cf292b97e6ec1e40e6a376e035ee9ebd9369c9dc233c474216ec0fe1b54aa
+      - ALGORITHM=HS256
     networks:
-      - "app-network"
+      - retofit-network
+
+  # Posts Service (Node.js/Prisma - puerto 8005)
+  posts-service:
+    build:
+      context: ./services/posts-service
+    container_name: posts-service
+    ports:
+      - "8005:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:Retofit2025@retofit.cd66iick6o60.us-east-2.rds.amazonaws.com:5432/retofit_posts?sslmode=no-verify
+      - SECRET_KEY=f40cf292b97e6ec1e40e6a376e035ee9ebd9369c9dc233c474216ec0fe1b54aa
+      - ALGORITHM=HS256
+      - PORT=8005
+      - NODE_ENV=development
+      - API_BASE_URL=http://localhost:8005
+      - MAX_FILE_SIZE=5242880
+      - UPLOAD_DIR=./uploads
+      - CLOUDINARY_CLOUD_NAME=dpsncmfxz
+      - CLOUDINARY_API_KEY=848674259162179
+      - CLOUDINARY_API_SECRET=6zQbbB8L-cZQbKT1MLIkuKKuqFg
+    networks:
+      - retofit-network
+
+  # Admin Service (PHP - puerto 8006)
+  admin-service:
+    build:
+      context: ./services/admin-service
+    container_name: admin-service
+    ports:
+      - "8006:8000"
+    environment:
+      - FRONTEND_URL=http://localhost:3000
+      - AUTH_SERVICE_URL=http://api-gateway:8080/api/auth_admin
+      - USER_SERVICE_URL=http://api-gateway:8080/api/users_admin
+      - CHALLENGES_DATABASE_URL=postgresql://postgres:Retofit2025@retofit.cd66iick6o60.us-east-2.rds.amazonaws.com:5432/retofit_retos
+    networks:
+      - retofit-network
 
 networks:
-  app-network:
+  retofit-network:
     driver: bridge
+

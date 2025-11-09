@@ -1,55 +1,26 @@
-<<<<<<< HEAD
-# Usa una imagen base estable en lugar de Alpine
-FROM node:20-bookworm
-
-# Define el directorio de trabajo dentro del contenedor
-WORKDIR /app
-
-# Copia los archivos de dependencias primero (para aprovechar la cache de Docker)
-COPY package*.json ./
-
-# Instala las dependencias de Node.js (sin devDependencies en producción)
-RUN npm install 
-
-# Copia el resto del código de la aplicación
-COPY . .
-
-# Genera el cliente de Prisma (necesario para que funcione correctamente dentro del contenedor)
-RUN npx prisma generate
-
-# Expone el puerto donde corre tu servicio
-EXPOSE 8000
-
-# Comando de inicio del servicio
-CMD ["npm", "run", "dev"]
-=======
-# Usa una imagen base de Node.js
 FROM node:18-alpine
 
-# Instala openssl, una dependencia de Prisma en Alpine Linux
-RUN apk add --no-cache openssl
+# Instala dependencias para Prisma
+RUN apk add --no-cache openssl libc6-compat
 
-# Establece el directorio de trabajo
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# Copia los archivos de dependencias
-COPY ./services/posts-service/package*.json ./
+# Copia package files
+COPY package*.json ./
 
-# Instala las dependencias de npm
+# Instala todas las dependencias
 RUN npm install
 
-# Copia el schema de Prisma para poder generar el cliente
-COPY ./services/posts-service/prisma ./prisma/
+# Copia schema de Prisma
+COPY prisma ./prisma/
 
-# Genera el cliente de Prisma DENTRO del contenedor para el target correcto
+# Genera cliente de Prisma
 RUN npx prisma generate
 
-# Copia el resto del código de la aplicación
-COPY ./services/posts-service/ .
+# Copia el resto del código
+COPY . .
 
-# Expone el puerto
-EXPOSE 3000
+EXPOSE 8005
 
-# Comando para iniciar la aplicación
-CMD [ "npm", "run", "dev" ]
->>>>>>> Retofit2.1
+# Usa dev para desarrollo
+CMD ["npm", "run", "dev"]
