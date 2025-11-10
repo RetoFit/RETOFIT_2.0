@@ -14,7 +14,8 @@ services:
       - posts-service
       - admin-service
     networks:
-      - retofit-network
+      - public-net  # Conectado a la red pública
+      - private-net # Conectado a la red privada
 
   frontend:
     build:
@@ -42,7 +43,7 @@ services:
       - NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-1P33Y9WDD2
       - GEMINI_API_KEY=AIzaSyCQvZqvJV3vxdGgWwX_rRTahb8bvQHf2p8
     networks:
-      - retofit-network
+      - public-net  # Conectado a la red pública
   
   # Auth Service (Python/FastAPI - puerto 8001)
   auth-service:
@@ -65,7 +66,7 @@ services:
       - BACKEND_URL=http://localhost:8000
       - FRONTEND_URL=http://localhost:3000 
     networks:
-      - retofit-network
+      - private-net # Conectado a la red privada
 
   # Activities Service (Go - puerto 8002)
   activities-service:
@@ -81,7 +82,7 @@ services:
       - DB_DRIVER=postgres
       - DB_SOURCE=postgresql://postgres:Retofit2025@retofit.cd66iick6o60.us-east-2.rds.amazonaws.com:5432/retofit_activities
     networks:
-      - retofit-network
+      - private-net # Conectado a la red privada
 
   # Gamification Service (Python/FastAPI - puerto 8003)
   gamification-service:
@@ -93,7 +94,7 @@ services:
     environment:
       - DATABASE_URL=mongodb://mongo:wMssbdHQqDrJaPwUGqtqyfoqmPHvneJZ@gondola.proxy.rlwy.net:10201/retofit_gamification?authSource=admin
     networks:
-      - retofit-network
+      - private-net # Conectado a la red privada
 
   # Users Service (Python/FastAPI - puerto 8004)
   users-service:
@@ -108,7 +109,7 @@ services:
       - SECRET_KEY=f40cf292b97e6ec1e40e6a376e035ee9ebd9369c9dc233c474216ec0fe1b54aa
       - ALGORITHM=HS256
     networks:
-      - retofit-network
+      - private-net # Conectado a la red privada
 
   # Posts Service (Node.js/Prisma - puerto 8005)
   posts-service:
@@ -130,7 +131,7 @@ services:
       - CLOUDINARY_API_KEY=848674259162179
       - CLOUDINARY_API_SECRET=6zQbbB8L-cZQbKT1MLIkuKKuqFg
     networks:
-      - retofit-network
+      - private-net # Conectado a la red privada
 
   # Admin Service (PHP - puerto 8006)
   admin-service:
@@ -145,9 +146,12 @@ services:
       - USER_SERVICE_URL=http://api-gateway:8080/api/users_admin
       - CHALLENGES_DATABASE_URL=postgresql://postgres:Retofit2025@retofit.cd66iick6o60.us-east-2.rds.amazonaws.com:5432/retofit_retos
     networks:
-      - retofit-network
-
+      - private-net # Conectado a la red privada 
+      
+# --- Definición de las nuevas redes ---
 networks:
-  retofit-network:
+  public-net: # Red para la comunicación Frontend <-> Gateway
+    driver: bridge
+  private-net: # Red aislada para Gateway <-> Microservicios
     driver: bridge
 
