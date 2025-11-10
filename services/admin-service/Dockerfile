@@ -1,64 +1,36 @@
-<<<<<<< HEAD
-# Etapa 1: construcción
-FROM composer:2.7 AS builder
+FROM php:8.2-cli
+WORKDIR /var/www/html
 
-WORKDIR /app
+# Instala dependencias del sistema y extensiones de PHP para PostgreSQL
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    zip \
+    libzip-dev \
+    libpq-dev \
+    && docker-php-ext-install zip pdo pdo_pgsql pgsql \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copiamos los archivos de definición de dependencias
-COPY composer.json composer.lock ./
+# Instala Composer desde la imagen oficial
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Instalamos dependencias de producción
-RUN composer install --no-dev --no-interaction --optimize-autoloader
+# Copia archivos de dependencias primero (optimización de caché)
+COPY composer.json composer.lock* ./
 
-# Copiamos el resto del código fuente
+# Instala dependencias de Composer
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
+
+# Copia el resto del código
 COPY . .
 
-# Etapa 2: servidor PHP con Apache
-FROM php:8.2-apache
+# Ejecuta scripts post-instalación si existen
+RUN composer dump-autoload --optimize
 
-# Habilitar módulos necesarios (puedes agregar más si los usas)
-RUN docker-php-ext-install pdo pdo_mysql
+# Crea el directorio public si no existe
+RUN mkdir -p public
 
-# Configurar el DocumentRoot para apuntar a la carpeta 'public'
-ENV APACHE_DOCUMENT_ROOT /var/www/html/public
+# Expone el puerto
+EXPOSE 8006
 
-# Reescribimos la configuración de Apache
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
-    && sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
-
-# Copiamos los archivos desde la etapa builder
-COPY --from=builder /app /var/www/html
-
-# Habilitar mod_rewrite (importante para frameworks PHP modernos)
-RUN a2enmod rewrite
-
-EXPOSE 8000
-
-CMD ["apache2-foreground"]
-=======
-# Usa una imagen base de PHP con Apache
-FROM php:8.1-apache
-
-# Habilita mod_rewrite de Apache para las rutas amigables
-RUN a2enmod rewrite
-
-# Instala las dependencias de PHP necesarias
-RUN docker-php-ext-install pdo pdo_mysql
-
-# Copia los archivos del proyecto al directorio de Apache
-COPY ./services/admin-service/ /var/www/html/
-
-# Establece el DocumentRoot de Apache al directorio 'public'
-RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf
-
-# Instala Composer y las dependencias del proyecto
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-WORKDIR /var/www/html
-RUN composer install --no-interaction --optimize-autoloader
-
-# Cambia la propiedad de los archivos al usuario de Apache
-RUN chown -R www-data:www-data /var/www/html
-
-# Expone el puerto 80
-EXPOSE 80
->>>>>>> Retofit2.1
+# Inicia el servidor PHP
+CMD ["php", "-S", "0.0.0.0:8006", "-t", "public"]

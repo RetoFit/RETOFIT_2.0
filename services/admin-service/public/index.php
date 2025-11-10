@@ -27,12 +27,12 @@ $pdo_challenges->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 // --- Cliente HTTP para user service
 $userServiceClient = new Client([
-    'base_uri' => $_ENV['USER_SERVICE_URL'] ?? 'http://localhost:8080/api/users_admin',
+    'base_uri' => $_ENV['USER_SERVICE_URL'] ?? 'http://api-gateway:8080/api/users_admin',
     'timeout'  => 5.0,
 ]);
 // --- Cliente HTTP para auth service
 $authServiceClient = new Client([
-    'base_uri' => $_ENV['AUTH_SERVICE_URL'] ?? 'http://localhost:8080/api/auth_admin',
+    'base_uri' => $_ENV['AUTH_SERVICE_URL'] ?? 'http://api-gateway:8080/api/auth_admin',
     'timeout'  => 5.0,
 ]);
 
