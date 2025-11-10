@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Routes;
 
 use Psr\Http\Message\ResponseInterface as Response;
@@ -28,7 +27,13 @@ class UserRoutes
                 $profileMap = [];
                 foreach ($profileUsers as $profile) {
                     // El user-service devuelve 'id', 'username', 'email' debido a los alias de Pydantic
-                    $profileMap[$profile['id']] = $profile;
+                    // ✅ VERIFICAR que existe la clave 'id' antes de usarla
+                    if (isset($profile['id']) && !empty($profile['id'])) {
+                        $profileMap[$profile['id']] = $profile;
+                    } else {
+                        // Log para debugging sin romper la respuesta
+                        error_log("Perfil sin ID: " . print_r($profile, true));
+                    }
                 }
 
             } catch (GuzzleException $e) {
@@ -58,7 +63,9 @@ class UserRoutes
                     'delete' => "/admin/users/{$userId}",
                 ];
                 return $mappedUser;
-            }, $authUsers);
+            }, $authUsers);  
+            
+            error_log("Processed " . count($enrichedUsers) . " users");
 
             $data = ['stats' => $stats, 'users' => $enrichedUsers];
             $payload = json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);

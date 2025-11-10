@@ -1,28 +1,19 @@
-# Dockerfile
-
-# Usa una imagen base de Python
 FROM python:3.13.7-slim
 
-# Establece el directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-# Copia el archivo de requerimientos y los instala
+# Copiar el archivo de dependencias
 COPY requirements.txt .
+
+# Instalar las dependencias
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copia el resto del código de la aplicación
-COPY ./app ./app
+# Copiar el código de la aplicación
+COPY . .
 
-# Expone el puerto que usará la aplicación
-ENV DATABASE_URL: "postgresql://postgres:Retofit2025@retofit.cd66iick6o60.us-east-2.rds.amazonaws.com:5432/RetoFit"
-ENV SECRET_KEY: "f40cf292b97e6ec1e40e6a376e035ee9ebd9369c9dc233c474216ec0fe1b54aa"
-ENV ALGORITHM: "HS256"
+# Exponer el puerto en el que correrá la aplicación
+EXPOSE 8004
+EXPOSE 50051
 
-EXPOSE 8000
-
-# Comando para ejecutar la aplicación
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
-
-### Desplegar con Docker: Desde la carpeta auth-service, construye la imagen con "docker build -t auth-service" .
-###        y luego ejecútala con "docker run -p 8001:8000 -d --name auth-service auth-service".
-### uvicorn app.main:app --reload --port 8003
+# Comando para ejecutar la aplicación con Uvicorn
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8004"]

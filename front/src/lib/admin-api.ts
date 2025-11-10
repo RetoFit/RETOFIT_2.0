@@ -11,11 +11,14 @@ async function fetchWithAdminToken(url: string, options: RequestInit = {}) {
   }
 
   const headers: HeadersInit = {
+    'Accept': 'application/json',
     'Authorization': `Bearer ${token}`,
     ...options.headers,
   };
 
-  const response = await fetch(url, { ...options, headers });
+  const response = await fetch(url, { ...options, headers })
+
+  console.log("Response: ", response)
 
   if (response.status === 401) {
     localStorage.removeItem('admin_token');
@@ -28,6 +31,7 @@ async function fetchWithAdminToken(url: string, options: RequestInit = {}) {
   if (!response.ok) {
     // Intenta leer el cuerpo del error para dar un mensaje más específico
     try {
+      console.log("Error en AdminToken")
       const errorData = await response.json();
       throw new Error(errorData.error || errorData.message || 'Error en la solicitud al servicio de admin.');
     } catch (e) {
