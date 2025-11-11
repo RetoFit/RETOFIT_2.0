@@ -89,13 +89,13 @@ public class ApiGateway {
 }
 
 @ConfigurationProperties
-class UriConfiguration {
-	private String authServiceUri = "http://auth-service:8001";
-	private String activitiesServiceUri = "http://activities-service:8002";
-	private String gamificationServiceUri = "http://gamification-service:8003";
-	private String usersServiceUri = "http://users-service:8004";
-	private String postsServiceUri = "http://posts-service:8005";
-	private String adminServiceUri = "http://admin-service:8006";
+	class UriConfiguration {
+		private String authServiceUri = "http://auth-service:8001";
+		private String activitiesServiceUri = "http://activities-service:8002";
+		private String gamificationServiceUri = "http://gamification-service:8003";
+		private String usersServiceUri = "http://users-service:8004";
+		private String postsServiceUri = "http://posts-service:8005";
+		private String adminServiceUri = "http://admin-service:8006";
 
 		// Getters and Setters
 	public String getAuthServiceUri() {
