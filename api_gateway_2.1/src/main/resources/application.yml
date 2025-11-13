@@ -1,0 +1,81 @@
+server:
+  port: 8080
+  # Esta estrategia es crucial para que Spring Cloud Gateway reconozca los encabezados
+  # X-Forwarded-* que envía el proxy Nginx. Asegura que el gateway sepa que la
+  # conexión original fue HTTPS.
+  forward-headers-strategy: framework
+
+jwt:
+  # Lee la variable de entorno SECRET_KEY para la validación de tokens.
+  # Debes asegurarte de que esta variable esté definida en tu docker-compose.yaml
+  # para el servicio api-gateway.
+  secret: ${SECRET_KEY:f40cf292b97e6ec1e40e6a376e035ee9ebd9369c9dc233c474216ec0fe1b54aa}
+
+spring:
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            # Ruta para el servicio de autenticación
+            # Petición: /api/auth/** -> auth-service:8000/auth/**
+            - id: auth-service
+              uri: http://auth-service:8001
+              filters:
+                - StripPrefix=1 # Transforma /api/auth/** en /auth/**
+              predicates:
+                - Path=/api/auth/**
+
+            # Ruta para el admin auth service
+            # Petición: /api/auth_admin/admin/** -> auth-service:8000/admin/**
+            - id: admin-auth-service
+              uri: http://auth-service:8001
+              filters:
+                - StripPrefix=1 # Transforma /api/auth_admin/** en /auth_admin/**
+              predicates:
+                - Path=/api/auth_admin/admin/**
+
+            # Ruta para el servicio de usuarios
+            # Petición: /api/users/** -> users-service:8000/users/**
+            - id: users-service
+              uri: http://users-service:8004
+              filters:
+                - StripPrefix=1 # Transforma /api/users/** en /users/**
+              predicates:
+                - Path=/api/users/**
+
+            # Ruta para el servicio de actividades
+            # Petición: /api/activities/** -> activities-service:8002/activities/**
+            - id: activities-service
+              uri: http://activities-service:8002
+              filters:
+                - StripPrefix=1 # Transforma /api/activities/** en /activities/**
+              predicates:
+                - Path=/api/activities/**, /api/physical-activities/**
+
+            # Ruta para el servicio de gamificación
+            # Petición: /api/gamification/** -> gamification-service:8000/gamification/**
+            - id: gamification-service
+              uri: http://gamification-service:8003
+              filters:
+                - StripPrefix=1 # Transforma /api/gamification/** en /gamification/**
+              predicates:
+                - Path=/api/gamification/**
+
+            # Ruta para el servicio de publicaciones
+            # Petición: /api/posts/** -> posts-service:8000/posts/**
+            - id: posts-service
+              uri: http://posts-service:8000
+              filters:
+                - StripPrefix=1
+              predicates:
+                - Path=/api/posts/**
+
+            # Ruta para el servicio de administración
+            # Petición: /api/admin/** -> admin-service:8000/admin/**
+            - id: admin-service
+              uri: http://admin-service:8006
+              filters:
+                - StripPrefix=1 # Elimina solo /api
+              predicates:
+                - Path=/api/admin/**
