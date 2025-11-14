@@ -18,7 +18,7 @@ spring:
         webflux:
           routes:
             # Ruta para el servicio de autenticación
-            # Petición: /api/auth/** -> auth-service:8000/auth/**
+            
             - id: auth-service
               uri: http://auth-service:8001
               filters:
@@ -27,7 +27,7 @@ spring:
                 - Path=/api/auth/**
 
             # Ruta para el admin auth service
-            # Petición: /api/auth_admin/admin/** -> auth-service:8000/admin/**
+            
             - id: admin-auth-service
               uri: http://auth-service:8001
               filters:
@@ -63,7 +63,7 @@ spring:
                 - Path=/api/gamification/**
 
             # Ruta para el servicio de publicaciones
-            # Petición: /api/posts/** -> posts-service:8000/posts/**
+            
             - id: posts-service
               uri: http://posts-service:8000
               filters:
@@ -72,7 +72,7 @@ spring:
                 - Path=/api/posts/**
 
             # Ruta para el servicio de administración
-            # Petición: /api/admin/** -> admin-service:8000/admin/**
+            
             - id: admin-service
               uri: http://admin-service:8006
               filters:
