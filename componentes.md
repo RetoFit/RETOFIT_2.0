@@ -79,7 +79,21 @@ Servicio central de usuarios con capacidad de comunicación dual (REST y gRPC).
 
 <img width="1846" height="473" alt="image" src="https://github.com/user-attachments/assets/6e01b3e2-ef30-4ebf-ad45-ae4b5059fa69" />
 
+El admin-service es un microservicio de administración que orquesta las entidades centrales del dominio. Expone una API REST para la gestión completa de Challenges (incluyendo el progreso de usuarios) y Users.
+
+Opera de forma autónoma con su propia base de datos (retofit_retors) y se integra con el user-service para la gestión de datos de usuarios, reflejando una clara separación de responsabilidades en la arquitectura de microservicios.
+
 #### Estructura de Capas
 
 <img width="930" height="908" alt="CapasAdmin" src="https://github.com/user-attachments/assets/c0b335da-3f7b-4506-b625-503f69c0192d" />
+
+Microservicio REST que funciona como orquestador administrativo. Combina capa de presentación con endpoints HTTP y capa de infraestructura con:
+
+Acceso directo a PostgreSQL vía PDO
+
+Integración síncrona con microservicios (Auth, Users) usando Guzzle HTTP
+
+Gestión completa de Challenges y Users mediante APIs REST
+
+Arquitectura de 2 capas funcional: Presentación (rutas HTTP) + Infraestructura (BD y servicios externos).
 
