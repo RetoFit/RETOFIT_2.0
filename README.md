@@ -518,6 +518,50 @@ docker compose logs -f [nombre-servicio]
 docker compose down
 ```
 ---
+## 🔒 Pruebas de Patrones de Seguridad
+### Rate Limiting Pattern
+
+El sistema implementa el patrón **Rate Limiting**  utilizando **Nginx** como Reverse Proxy. Este mecanismo protege a los microservicios situados abajo (como `auth-service` y `user-service`) de ser saturados por picos de tráfico o ataques de denegación de servicio (DoS).
+
+#### Configuración del Patrón
+
+- **Zona de Memoria:** `apilimit` (10MB compartidos)
+- **Tasa Sostenida:** 10 peticiones/segundo (`10r/s`)
+- **Ráfaga (Burst):** 20 peticiones
+- **Comportamiento:** Las peticiones dentro de la ráfaga se procesan instantáneamente (`nodelay`), pero si se excede la capacidad total (Tasa + Ráfaga), Nginx corta la conexión inmediatamente.
+
+Se incluye un script en Python para validar la eficacia del bloqueo bajo alta concurrencia:
+
+**Prueba de Saturación**
+
+```bash
+python test_rate_limit.py
+```
+
+**Salida esperada**
+- Peticiones 1-30 (Aprox): Reciben código 200 OK o 405 Method Not Allowed (proveniente del microservicio). Esto indica tráfico legítimo aceptado.
+
+- Peticiones 31-50 (Aprox): Reciben código 503 Service Temporarily Unavailable. Este error es generado por Nginx, demostrando que la petición nunca tocó el microservicio ni la base de datos.
+```bash
+🚀 Iniciando prueba de Rate Limiting (Enfoque Arquitectónico)...
+📡 URL Objetivo: https://localhost/api/users/
+⚡ Lanzando 50 peticiones simultáneas...
+
+📊 --- RESULTADOS DEL TEST ---
+⏱️  Tiempo total: 0.89 segundos
+✅ Peticiones Aceptadas (Pasaron al Backend): 29
+⛔ Peticiones Bloqueadas (Detenidas por Nginx): 21
+----------------------------------------
+[EXITO] El patrón Rate Limiting está ACTIVO.
+       Nginx protegió el sistema del exceso de tráfico.
+```
+**Beneficios Demostrados**
+1. Protección Anti-DoS: Evita que un atacante inunde el sistema con solicitudes.
+
+2. Estabilidad: Garantiza que los microservicios (User, Auth, etc.) solo reciban una carga de trabajo que pueden procesar.
+
+3. Seguridad en el Borde: El tráfico malicioso es detenido en Nginx, antes de consumir recursos de procesamiento del API Gateway o la Base de Datos.
+
 
 ## 🧪 Pruebas de Patrones de Escalabilidad
 
