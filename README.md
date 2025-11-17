@@ -1,6 +1,23 @@
 # RetoFit 2.0 🏋️‍♂️
 
-Bienvenido al repositorio oficial del proyecto RetoFit 2.0. Este es un monorepo que contiene la aplicación completa, incluyendo el frontend y todos los microservicios del backend.
+Bienvenido al repositorio oficial del proyecto RetoFit 2.0. Este es un monorepo que contiene la aplicación completa, incluyendo el frontend (con arquitectura de microfrontends) y todos los microservicios del backend.
+
+## 🏗️ Arquitectura de Microfrontends
+
+El proyecto ahora implementa una **arquitectura de microfrontends** que separa:
+
+- **Landing Page** (`/landing-page`) - Puerto 3001
+  - Página de aterrizaje pública
+  - Presentación del producto
+  - Información del equipo
+  
+- **Frontend Principal** (`/front`) - Puerto 3000
+  - Aplicación completa con autenticación
+  - Dashboard, retos, perfil
+  - Panel de administración
+
+📖 **Documentación detallada**: Ver [MICROFRONTENDS.md](./MICROFRONTENDS.md)
+
 ## Equipo
 
 ### Nombre del equipo
@@ -588,7 +605,7 @@ Cuando un servicio falla y el Circuit Breaker se activa (estado OPEN), el sistem
 
 ```
 RETOFIT_2.0/
-├── api_gateway/                     # Api Gateway (Java)
+├── api_gateway_2.1/            # Api Gateway (Java + Spring Cloud Gateway)
 │   ├── src/
 |   |   └── main/ 
 |   |       ├── java/
@@ -596,25 +613,135 @@ RETOFIT_2.0/
 |   |       |       └── example/
 |   |       |           └── api_gateway/
 |   |       |               ├── config/
-|   |       |               |   └── CorsConfig.java
+|   |       |               |   ├── CorsConfig.java
+|   |       |               |   └── CircuitBreakerConfig.java
 |   |       |               ├── filter/
 |   |       |               |   └── LoggingFilter.java
 |   |       |               └── Application.java
 │   |       └── resources/
 |   |           └── application.yml
 │   ├── pom.xml
-├── front/                     # Frontend (Next.js)
-│   ├── components/
-│   ├── pages/
-│   └── ...
-├── services/                  # Microservicios
-|    ├── activities-service/    # (Deprecated)
-|    ├── auth-service/          # (Python) Servicio de Autenticación
-|    ├── admin-service/         # (PHP) Servicio de Administración
-|    ├── gamification-service/  # (Python) Servicio de Gamificación
-|    ├── physical_activities_service/  # (Go) Servicio de actividades
-|    ├── posts-service          # (Node.js + TypeScript) Servicio de foro
-|    └── user-service/          # (Python) Servicio de Usuarios
+├── landing-page/              # 🆕 Landing Page Microfrontend (Next.js - Puerto 3001)
+│   ├── src/
+│   │   ├── app/              # App Router
+│   │   │   ├── page.tsx     # Página principal
+│   │   │   ├── layout.tsx   # Layout raíz
+│   │   │   └── globals.css  # Estilos
+│   │   ├── components/      # Componentes UI
+│   │   │   ├── ui/         # shadcn/ui
+│   │   │   └── icons.tsx
+│   │   └── lib/            # Utilidades
+│   ├── public/
+│   │   └── images/         # Imágenes del equipo
+│   ├── Dockerfile          # Multi-stage build
+│   ├── package.json
+│   ├── next.config.ts
+│   ├── tailwind.config.ts
+│   └── README.md
+├── front/                     # Frontend Principal (Next.js - Puerto 3000)
+│   ├── src/
+│   │   ├── app/              # App Router
+│   │   │   ├── (auth)/      # Rutas de autenticación
+│   │   │   ├── dashboard/   # Dashboard
+│   │   │   └── admin/       # Panel admin
+│   │   ├── components/      # Componentes React
+│   │   ├── hooks/          # Custom hooks
+│   │   ├── lib/            # APIs y utilidades
+│   │   └── ai/             # Integración Genkit
+│   ├── public/
+│   ├── Dockerfile
+│   ├── package.json
+│   └── next.config.ts
+├── nginx/                     # Reverse Proxy
+│   ├── nginx.conf            # Configuración de enrutamiento
+│   └── tls/                  # Certificados SSL
+├── services/                  # Microservicios Backend
+|    ├── auth-service/          # (Python + FastAPI) Puerto 8001
+|    ├── admin-service/         # (PHP + Slim) Puerto 8006
+|    ├── gamification-service/  # (Python + FastAPI) Puerto 8003
+|    ├── physical_activities_service/  # (Go + Gin) Puerto 8002
+|    ├── posts-service          # (Node.js + TypeScript) Puerto 8005
+|    └── user-service/          # (Python + FastAPI) Puerto 8004
+├── docker-compose.yaml        # Orquestación de contenedores
+├── microfrontends.ps1         # 🆕 Script de gestión de microfrontends
+├── MICROFRONTENDS.md          # 🆕 Documentación de arquitectura
 ├── .gitignore
 └── README.md
+```
+
+## 🚀 Guía de Inicio Rápido
+
+### Requisitos Previos
+
+- **Docker** y **Docker Compose** instalados
+- **Node.js** 18+ (para desarrollo local)
+- **PowerShell** (en Windows)
+
+### Opción 1: Despliegue Completo con Docker (Recomendado)
+
+```bash
+# Clonar el repositorio
+git clone https://github.com/RetoFit/RETOFIT_2.0.git
+cd RETOFIT_2.0
+
+# Levantar todos los servicios
+docker-compose up --build
+
+# Acceder a la aplicación
+# Landing page: https://localhost/
+# Frontend: https://localhost/dashboard
+# API: https://localhost/api/
+```
+
+### Opción 2: Desarrollo Local de Microfrontends
+
+```powershell
+# Usar el script de gestión (Windows)
+.\microfrontends.ps1 install    # Instalar dependencias
+.\microfrontends.ps1 dev        # Modo desarrollo
+
+# O manualmente
+cd landing-page
+npm install
+npm run dev  # Puerto 3001
+
+# En otra terminal
+cd front
+npm install
+npm run dev  # Puerto 3000
+```
+
+### Comandos Útiles del Script de Microfrontends
+
+```powershell
+.\microfrontends.ps1 dev         # Iniciar ambos frontends en dev
+.\microfrontends.ps1 build       # Construir para producción
+.\microfrontends.ps1 docker-up   # Levantar con Docker
+.\microfrontends.ps1 docker-down # Detener Docker
+.\microfrontends.ps1 install     # Instalar dependencias
+.\microfrontends.ps1 clean       # Limpiar node_modules
+.\microfrontends.ps1 help        # Ver ayuda
+```
+
+### Acceso a la Aplicación
+
+Una vez desplegado el sistema:
+
+| Componente | URL | Descripción |
+|------------|-----|-------------|
+| **Landing Page** | https://localhost/ | Página de bienvenida |
+| **Login** | https://localhost/login | Autenticación |
+| **Dashboard** | https://localhost/dashboard | Panel principal |
+| **Admin** | https://localhost/admin | Administración |
+| **API Gateway** | https://localhost/api/ | Endpoints de API |
+| **Circuit Breakers** | http://localhost:8081/actuator/ | Monitoreo |
+
+### Variables de Entorno
+
+**Landing Page** (`.env.local`):
+```env
+NEXT_PUBLIC_FRONTEND_URL=https://localhost
+```
+
+**Frontend Principal**: Configurado en `docker-compose.yaml`
 ```
