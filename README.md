@@ -502,6 +502,88 @@ docker compose down
 ```
 ---
 
+## 🧪 Pruebas de Patrones de Escalabilidad
+
+### Circuit Breaker Pattern
+
+El sistema implementa el patrón **Circuit Breaker** usando Spring Cloud Gateway y Resilience4j para mejorar la resiliencia y prevenir cascadas de fallos cuando un servicio está caído.
+
+#### Configuración del Circuit Breaker
+
+- **Umbral de fallos:** 50%
+- **Llamadas mínimas:** 5
+- **Timeout por petición:** 5 segundos
+- **Tiempo en estado OPEN:** 10 segundos
+- **Estados:** CLOSED → OPEN → HALF_OPEN → CLOSED
+
+#### Scripts de Prueba
+
+Se incluyen dos scripts PowerShell para probar el Circuit Breaker:
+
+**1. Prueba Directa al Gateway (sin Nginx)**
+
+```powershell
+.\test-circuit-breaker-direct.ps1
+```
+
+Este script prueba el Circuit Breaker accediendo directamente al API Gateway en el puerto 8081, sin pasar por Nginx.
+
+**Resultados esperados:**
+- Tiempo SIN Circuit Breaker: ~24-30 segundos (timeouts)
+- Tiempo CON Circuit Breaker: ~1-2 segundos (fallback inmediato)
+- **Mejora de performance: ~15-20x más rápido**
+
+**2. Prueba a través de Nginx (HTTPS)**
+
+```powershell
+.\test-circuit-breaker-nginx.ps1
+```
+
+Este script prueba el Circuit Breaker en un escenario real, accediendo a través de Nginx con HTTPS y Rate Limiting configurado.
+
+**Resultados esperados:**
+- Tiempo SIN Circuit Breaker: ~5-10 segundos
+- Tiempo CON Circuit Breaker: ~1-2 segundos
+- **Mejora de performance: ~4-5x más rápido**
+
+#### Monitoreo del Circuit Breaker
+
+Puedes verificar el estado de los Circuit Breakers en tiempo real:
+
+```powershell
+# Ver todos los circuit breakers
+Invoke-WebRequest -Uri http://localhost:8081/actuator/circuit-breakers -UseBasicParsing
+
+# Ver un circuit breaker específico
+Invoke-WebRequest -Uri http://localhost:8081/actuator/circuit-breakers/usersServiceCircuitBreaker -UseBasicParsing
+```
+
+#### Endpoints de Fallback
+
+Cuando un servicio falla y el Circuit Breaker se activa (estado OPEN), el sistema retorna automáticamente respuestas de fallback con mensajes descriptivos:
+
+```json
+{
+  "timestamp": "2025-11-17T03:02:23.822894950",
+  "status": 503,
+  "error": "Service Unavailable",
+  "message": "El servicio de usuarios no está disponible temporalmente. Por favor, intente más tarde.",
+  "service": "Users Service",
+  "circuitBreakerActivated": true
+}
+```
+
+#### Beneficios Demostrados
+
+1. **Resiliencia:** El sistema sigue respondiendo aunque servicios internos fallen
+2. **Performance:** Respuestas inmediatas (sin esperar timeouts de 5 segundos)
+3. **Auto-recuperación:** El circuito se cierra automáticamente cuando el servicio se recupera
+4. **Prevención de cascada:** Evita que fallos en un servicio tumben todo el sistema
+5. **Experiencia de usuario:** Mensajes claros en lugar de timeouts largos
+
+
+---
+
 ## 📁 Estructura del Proyecto
 
 ```

@@ -20,6 +20,8 @@ services:
     build:
       context: ./api_gateway_2.1
     container_name: api-gateway
+    ports:
+      - "8081:8080"  # Exponer puerto para monitoreo de Circuit Breakers
     depends_on:
       - auth-service
       - activities-service
