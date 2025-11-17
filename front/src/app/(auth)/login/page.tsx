@@ -123,7 +123,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         {/* Botón centrado encima del card */}
         <div className="mb-4 text-center">
-          <Link href="/landing">
+          <Link href="/">
             <Button 
               variant="outline" 
               className="shadow-md hover:shadow-lg transition-all border-orange-500 text-orange-500 hover:bg-orange-50"
