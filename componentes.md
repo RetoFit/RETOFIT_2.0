@@ -76,7 +76,10 @@ Servicio central de usuarios con capacidad de comunicación dual (REST y gRPC).
 ### 2.3. Admin Service
 
 #### Estructura de Descomposición
-<img width="1288" height="969" alt="adminService_Capas" src="https://github.com/user-attachments/assets/a1d61698-0606-4841-9503-e696c83e9a01" />
+
+<img width="1846" height="473" alt="image" src="https://github.com/user-attachments/assets/6e01b3e2-ef30-4ebf-ad45-ae4b5059fa69" />
 
 #### Estructura de Capas
-<img width="1736" height="621" alt="Components" src="https://github.com/user-attachments/assets/8045d32d-191f-4c6b-996a-fca27ab588e3" />
+
+<img width="930" height="908" alt="CapasAdmin" src="https://github.com/user-attachments/assets/c0b335da-3f7b-4506-b625-503f69c0192d" />
+
