@@ -507,6 +507,31 @@ Este diagrama complementa otros views técnicos del sistema mostrando claramente
 **Diagrama:**  
 ![Auth Sequence](<diagramas/auth flow.png>)
 
+### 5. HTTPS Evidence — Deployment Security Proof
+
+Esta sección presenta evidencia visual de que el sistema está funcionando efectivamente bajo HTTPS, con terminación TLS en Nginx tal como se describe en el *Deployment View* y en las tácticas de seguridad previamente enumeradas.
+
+Las capturas de pantalla demuestran:
+
+- Que el frontend es servido mediante `https://localhost`.
+- Que el navegador reconoce el certificado instalado en Nginx.
+- Que la conexión es segura (🔒) y el certificado es válido.
+- Que no existen advertencias de contenido inseguro.
+- Que el tráfico entre usuario ⇆ Nginx se encuentra cifrado.
+
+Estas evidencias complementan el modelo de amenazas y validan la configuración real del entorno.
+
+**Capturas:**
+
+1. **Indicador de conexión segura (HTTPS activo): NO LO PUDE PONER**    
+   ![HTTPS Lock](<diagramas/https-lock.png>)
+
+2. **Detalles del certificado y su validez:**  
+   ![Certificate Details](diagramas/certificados_https.png)
+
+3. **Frontend cargado correctamente bajo HTTPS: NO LO PUDE PONER**  
+   ![Frontend HTTPS](<diagramas/frontend-https.png>)
+
 ---
 
 
