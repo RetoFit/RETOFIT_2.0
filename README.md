@@ -434,6 +434,82 @@ Usuario (Navegador) → [HTTP/HTTPS] → Front web → [REST] → API Gateway �
 
 ---
 
+## Security View
+
+Esta sección describe cómo se gestionan los aspectos clave de seguridad dentro de la arquitectura de RetoFit 2.0, incluyendo amenazas, tácticas aplicadas y patrones arquitectónicos utilizados. El propósito de este view es complementar la información del *Deployment View* mostrando cómo se protege cada punto del sistema, desde la comunicación externa hasta las interacciones internas entre microservicios.
+
+
+### 1. Threat Model — Security Scenarios
+
+Este diagrama representa una visión general de los flujos de datos críticos dentro del sistema y los puntos donde pueden aparecer amenazas relevantes.  
+Incluye el recorrido que realiza un usuario desde el frontend, pasando por Nginx y el API Gateway, y llegando a los microservicios expuestos en la red privada.
+
+El diagrama identifica amenazas comunes como:
+- Manipulación de tokens durante la comunicación.
+- Interceptación de tráfico externo.
+- Peticiones maliciosas hacia rutas críticas.
+- Accesos indebidos a servicios internos.
+
+**Diagrama:**  
+
+![Threat Model](<diagramas/threat model diagram.png>)
+---
+
+### 2. Security Tactics — Controles Aplicados
+
+Este diagrama muestra, desde una perspectiva arquitectónica, qué tácticas de seguridad se aplican sobre cada uno de los componentes del sistema.  
+El objetivo es presentar de manera clara cómo se refuerza cada capa del modelo:
+
+- Terminación de HTTPS en Nginx.  
+- Validación y emisión de JWT en el Auth Service.  
+- Filtrado y enrutamiento controlado en el API Gateway.  
+- Aislamiento por redes internas para microservicios.  
+- Respeto al patrón “database-per-service”.
+
+Esto complementa y amplía la información vista en el *Deployment View*.
+
+**Diagrama:**  
+![Security Tactics](<diagramas/security tactics diagram.png>)
+
+---
+
+### 3. Security Architecture Pattern — Patrones Aplicados
+
+Este diagrama presenta una vista de alto nivel sobre cómo los componentes principales se organizan siguiendo patrones de seguridad utilizados en arquitecturas modernas.
+
+Entre los patrones incluidos se encuentran:
+- **Reverse Proxy** (Nginx recibiendo todo el tráfico entrante).  
+- **API Gateway Pattern** para controlar el acceso a los microservicios.  
+- **Separation of Concerns** al delegar autenticación en un solo servicio.  
+- **Network Segmentation** mediante redes públicas y privadas.  
+- **Database-per-Service Pattern** reforzando el aislamiento de datos.
+
+Este diagrama sirve para entender rápidamente cómo la estructura general del sistema favorece la seguridad end-to-end.
+
+**Diagrama:**  
+![Security Architecture Pattern](<diagramas/security arquitecture pattern diagram.png>)
+
+---
+
+### 4. Authentication Sequence — Flujo de Autenticación
+
+Este diagrama de secuencia ilustra el proceso completo desde que un usuario inicia sesión en la aplicación web hasta que obtiene un JWT válido, así como la validación posterior del token cuando realiza solicitudes a microservicios protegidos.
+
+El flujo cubre:
+1. Envío de credenciales desde el frontend.  
+2. Paso por Nginx y enrutamiento por el API Gateway.  
+3. Validación de credenciales por el Auth Service.  
+4. Emisión de un JWT si las credenciales son válidas.  
+5. Validación posterior del token en cada request autenticada.
+
+Este diagrama complementa otros views técnicos del sistema mostrando claramente la interacción entre frontend, proxy, gateway y servicios internos en procesos sensibles.
+
+**Diagrama:**  
+![Auth Sequence](<diagramas/auth flow.png>)
+
+---
+
+
 ## Decomposition View
 <div align="center"><img width="80%" alt="image" src="https://github.com/user-attachments/assets/8e98e040-9933-42a3-89da-af5e0bc062e3" /></div>
 
