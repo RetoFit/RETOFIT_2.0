@@ -114,3 +114,46 @@ Gestión completa de Challenges y Users mediante APIs REST
 
 Arquitectura de 2 capas funcional: Presentación (rutas HTTP) + Infraestructura (BD y servicios externos).
 
+### 2.4 Physical Activities Service
+
+#### Estructura de Descomposición 
+<div align="center"><img width="80%" alt="image" src=diagramas/Diagrama_Descomposición_Activities.png/></div>
+
+El servicio adopta el *Standard Go Project Layout*, dividiendo el sistema en tres grandes bloques:
+
+* **cmd/**: Contiene el punto de entrada de la aplicación (main.go). Es la capa de "arranque" y configuración.
+* **internal/**: Contiene el código privado de la aplicación que no debe ser importado por otros proyectos. Aquí reside el núcleo funcional dividido en:
+    * handlers: Controladores HTTP.
+    * services: Lógica de negocio.
+    * repositories: Acceso a base de datos SQL.
+    * grpc: Clientes para comunicación con otros microservicios.
+* **api/**: Define las rutas y la configuración del servidor HTTP.
+
+*Relación:* Se cumple la relación estricta de "parte-todo", donde internal actúa como el contenedor padre de toda la lógica de negocio, protegiéndola del exterior.
+
+---
+
+#### Estructura de Capas
+<div align="center"><img width="80%" alt="image" src=diagramas/Diagrama_Capas_Activities.png/></div>
+
+El sistema se organiza en tres capas horizontales con dependencia unidireccional descendente (Presentation -> Business -> Data):
+
+##### 1. Presentation Layer (Capa Superior)
+* *Componentes:* HTTP Handlers (en internal/handlers) y Router (en api/router).
+* *Responsabilidad:* Recibir las peticiones HTTP, validar la entrada (JSON) y enrutar el tráfico. No contiene lógica de negocio compleja.
+
+##### 2. Business Logic Layer (Capa Intermedia)
+* *Componentes:* Domain Services (en internal/services).
+* *Responsabilidad:* Ejecutar las reglas de negocio (ej. activityService.go). Es agnóstica a la base de datos o al transporte HTTP.
+
+##### 3. Data Access & Integration Layer (Capa Inferior)
+* *Componentes:*
+    * **Repositories:** Encargado de la persistencia local en base de datos SQL (activityRepository.go).
+    * **gRPC Client Adapter:** Encargado de la comunicación externa con el User Service (userClient.go).
+* *Análisis Clave:* A nivel arquitectónico, tanto la base de datos local como el servicio externo (vía gRPC) se consideran *proveedores de datos*. Por ello, el cliente gRPC se ubica en esta capa inferior junto a los repositorios, actuando como infraestructura que "sirve" datos a la capa de negocio.
+
+##### Restricciones Cumplidas (Allowed-to-use)
+* La capa de *Presentación* solo usa la capa de *Negocio*.
+* La capa de *Negocio* solo usa la capa de *Datos/Integración*.
+* No existen ciclos ni dependencias inversas (la capa de datos no conoce a la capa de presentación).
+
