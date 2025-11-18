@@ -94,7 +94,7 @@ RETOFIT es una plataforma diseñada para ayudar y hacer un seguimiento a los eje
 ### Estructura de componentes y conectores
 ---
 #### C&C View
-<div align="center"><img width="80%" alt="image" src="https://raw.githubusercontent.com/RetoFit/Image_Repository/refs/heads/main/Blank%20diagram%20-%20Page%201.png" /></div>
+![Diagrama de Componentes](diagramas/Componentes.png)
 
 #### **Estilos y patrones arquitectónicos usados**
 
@@ -198,7 +198,7 @@ En cuanto a los conectores, existen los siguientes:
 ---
 
 ## Layered View
-<div align="center"><img width="80%" alt="image" src="https://raw.githubusercontent.com/RetoFit/Image_Repository/refs/heads/main/vista_layer.png" /></div>
+![Diagrama de Capas](diagramas/Diagrama_capas_general.png)
 
 ### Capa de Presentación (Presentation Layer)
 
