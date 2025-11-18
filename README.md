@@ -519,6 +519,56 @@ docker compose down
 ```
 ---
 ## 🔒 Pruebas de Patrones de Seguridad
+
+### 🛡️ Seguridad y Segmentación de Red
+
+El proyecto implementa una estrategia de **defensa en profundidad** mediante segmentación de redes en Docker. Esto asegura que los microservicios no sean accesibles directamente desde el frontend o internet, forzando todo el tráfico a través del API Gateway.
+
+### Arquitectura de Redes
+
+| Red | Tipo | Servicios Conectados | Descripción |
+|-----|------|----------------------|-------------|
+| **public-net** | Bridge | Nginx, Landing Page, Frontend, API Gateway | Red expuesta (vía proxy) para la interfaz de usuario. |
+| **private-net** | Bridge | API Gateway, Todos los Microservicios, Bases de Datos | Red aislada. Contiene la lógica de negocio y datos. |
+
+### Verificación de Aislamiento
+
+Se ha incluido un script automatizado para validar que las reglas de firewall de Docker estén funcionando correctamente.
+
+**Requisitos:**
+- Python 3 instalado.
+- Contenedores corriendo (`docker compose up -d`).
+
+**Ejecutar prueba:**
+```bash
+# Ejecutar desde la raíz del proyecto
+python scripts/verify_network.py
+```
+El script simula un "ataque" interno intentando realizar conexiones de red no autorizadas entre contenedores. Su objetivo es confirmar que:
+
+1.  **El Frontend (Público)** NO tenga acceso directo a los servicios privados (como Auth o Bases de Datos).
+2.  **El API Gateway** SÍ tenga acceso a los servicios privados (actuando como puente).
+3.  **El Proxy Inverso (Nginx)** pueda comunicarse con los frontends.
+
+**Resultados esperados:**
+```bash
+=== Iniciando Verificación de Segmentación de Red (TCP) ===
+Usando Netcat (nc) para compatibilidad con Alpine Linux
+
+Probando conexión: [frontend] -> auth-service:8001... ✔ ÉXITO (Bloqueado correctamente)
+Probando conexión: [api-gateway] -> auth-service:8001... ✔ ÉXITO (Conectado)
+Probando conexión: [nginx-proxy] -> landing-page:3001... ✔ ÉXITO (Conectado)
+
+=== Resultados ===
+Pruebas ejecutadas: 3
+Pruebas pasadas: 3
+```
+**Beneficios Demostrados:**
+- Reducción de la Superficie de Ataque: Si un atacante logra vulnerar el Frontend (que está expuesto a internet), NO tendrá acceso directo a tus microservicios críticos (Auth, Usuarios, Base de Datos). El firewall de Docker le impedirá ver esas IPs o puertos.
+
+- Gatekeeper forzado (Patrón Gateway):Se obliga a que todo el tráfico pase por el API Gateway. Esto garantiza que nadie pueda "saltarse" los mecanismos de seguridad centralizados.
+
+- Aislamiento de Datos: Las bases de datos y servicios backend viven en una "burbuja" segura. Solo el API Gateway (que tiene una "tarjeta de acceso" especial al estar en ambas redes) puede hablar con ellos.
 ### Rate Limiting Pattern
 
 El sistema implementa el patrón **Rate Limiting**  utilizando **Nginx** como Reverse Proxy. Este mecanismo protege a los microservicios situados abajo (como `auth-service` y `user-service`) de ser saturados por picos de tráfico o ataques de denegación de servicio (DoS).
