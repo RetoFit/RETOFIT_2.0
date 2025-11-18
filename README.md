@@ -535,6 +535,8 @@ El proyecto implementa una estrategia de **defensa en profundidad** mediante seg
 
 Se ha incluido un script automatizado para validar que las reglas de firewall de Docker estén funcionando correctamente.
 
+![Diagrama segmentacion de Red](diagramas/Segmentacion_Red.png)
+
 **Requisitos:**
 - Python 3 instalado.
 - Contenedores corriendo (`docker compose up -d`).
