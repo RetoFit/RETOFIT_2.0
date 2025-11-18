@@ -85,7 +85,8 @@ Opera de forma autónoma con su propia base de datos (retofit_retors) y se integ
 
 #### Estructura de Capas
 
-<img width="930" height="908" alt="CapasAdmin" src="https://github.com/user-attachments/assets/c0b335da-3f7b-4506-b625-503f69c0192d" />
+<img width="625" height="546" alt="image" src="https://github.com/user-attachments/assets/fc02d594-18a4-46d0-85af-754a4c716a9d" />
+
 
 Microservicio REST que funciona como orquestador administrativo. Combina capa de presentación con endpoints HTTP y capa de infraestructura con:
 
