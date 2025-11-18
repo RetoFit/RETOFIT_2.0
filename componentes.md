@@ -24,6 +24,22 @@ Representa la separación lógica de responsabilidades y el flujo de uso permiti
 * **Explicación:** El sistema se estructura en capas horizontales: Presentación, Gateway, Servicios y Datos.
 * **Restricción (Allowed-to-use):** Se cumple la restricción de unidireccionalidad. Las capas superiores solo pueden usar las inferiores (ej. `Presentation` -> `Gateway` -> `Services`), garantizando la separación de intereses y evitando ciclos.
 
+### 1.3 Diagrama de Despliegue del Sistema
+Muestra la infraestructura física y lógica donde se despliega el sistema, incluyendo servidores, contenedores y servicios externos.
+
+![Diagrama de Despliegue General](diagramas/Diagrama_Despliegue.png)
+
+* **Explicación:** El sistema se despliega en contenedores Docker organizados en diferentes nodos. Además, utiliza servicios externos como Firebase y Cloudinary para autenticación y almacenamiento de imágenes.
+* **Componentes Principales:**
+  - **Docker Containers:** Contienen los microservicios (`auth-service`, `user-service`, `post-service`, etc.), el API Gateway, y los frontends (`FrontEnd` y `Landing Page`).
+  - **Servicios Externos:** 
+    - **Firebase:** Proveedor de autenticación y servicios adicionales.
+    - **Cloudinary:** Proveedor de almacenamiento de imágenes.
+  - **Bases de Datos:** 
+    - **PostgreSQL:** Bases de datos relacionales (`retofit_users_db`, `retofit_posts_db`, etc.).
+    - **MongoDB:** Base de datos no relacional (`retofit_gamification_db`).
+  - **Nginx:** Reverse proxy para manejar tráfico HTTP/HTTPS y enrutarlo hacia los contenedores internos.
+* **Relación:** Los contenedores Docker interactúan entre sí mediante redes internas, mientras que los servicios externos y las bases de datos están conectados mediante APIs y conexiones seguras.
 ---
 
 ## 2. Arquitectura de Componentes (Microservicios Python)
