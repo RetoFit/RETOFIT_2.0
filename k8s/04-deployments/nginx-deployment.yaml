@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-proxy
+  labels:
+    app: nginx-proxy
+    tier: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-proxy
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: nginx-proxy
+        tier: frontend
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        - containerPort: 443
+          name: https
+          protocol: TCP
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/conf.d
+          readOnly: true
+        - name: tls-certs
+          mountPath: /etc/nginx/tls
+          readOnly: true
+        livenessProbe:
+          httpGet:
+            path: /nginx-health
+            port: 443
+            scheme: HTTPS
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /nginx-health
+            port: 443
+            scheme: HTTPS
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: nginx-config
+          items:
+          - key: default.conf
+            path: default.conf
+      - name: tls-certs
+        secret:
+          secretName: nginx-tls-secret

@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: admin-service
+  labels:
+    app: admin-service
+    tier: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: admin-service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: admin-service
+        tier: backend
+    spec:
+      containers:
+      - name: admin-service
+        image: retofit/admin-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8006
+          name: http
+          protocol: TCP
+        env:
+        - name: CHALLENGES_DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: database-secrets
+              key: ADMIN_DB_URL
+        - name: USER_SERVICE_URL
+          value: "http://users-service:8004"
+        - name: AUTH_SERVICE_URL
+          value: "http://auth-service:8001"
+        - name: FRONTEND_URL
+          value: "https://localhost"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8006
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8006
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"

@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gamification-service
+  labels:
+    app: gamification-service
+    tier: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gamification-service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: gamification-service
+        tier: backend
+    spec:
+      containers:
+      - name: gamification-service
+        image: retofit/gamification-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8003
+          name: http
+          protocol: TCP
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key: MONGO_URL
+        - name: PORT
+          value: "8000"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8003
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8003
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"

@@ -23,8 +23,12 @@ spring:
       server:
         webflux:
           routes:
-            # Ruta para el servicio de autenticación
-            # Petición: /api/auth/** -> auth-service:8000/auth/**
+            # LOAD BALANCING: Docker DNS automáticamente resuelve los nombres de servicio
+            # (ej: auth-service, users-service) a TODAS las IPs de réplicas disponibles
+            # y hace round-robin entre ellas. No se requiere configuración adicional.
+
+            # Ruta para el servicio de autenticación (SOPORTA MÚLTIPLES RÉPLICAS)
+            # Petición: /api/auth/** -> auth-service:8001/auth/**
             - id: auth-service
               uri: http://auth-service:8001
               filters:
@@ -49,7 +53,7 @@ spring:
               predicates:
                 - Path=/api/auth_admin/admin/**
 
-            # Ruta para el servicio de usuarios
+            # Ruta para el servicio de usuarios (SOPORTA MÚLTIPLES RÉPLICAS)
             # Petición: /api/users/** -> users-service:8000/users/**
             - id: users-service
               uri: http://users-service:8004
@@ -62,7 +66,7 @@ spring:
               predicates:
                 - Path=/api/users/**
 
-            # Ruta para el servicio de actividades
+            # Ruta para el servicio de actividades (SOPORTA MÚLTIPLES RÉPLICAS)
             # Petición: /api/activities/** -> activities-service:8002/activities/**
             - id: activities-service
               uri: http://activities-service:8002
@@ -89,9 +93,9 @@ spring:
                 - Path=/api/gamification/**
 
             # Ruta para el servicio de publicaciones
-            # Petición: /api/posts/** -> posts-service:8000/posts/**
+            # Petición: /api/posts/** -> posts-service:8005/posts/**
             - id: posts-service
-              uri: http://posts-service:8000
+              uri: http://posts-service:8005
               filters:
                 - StripPrefix=1
                 - name: CircuitBreaker
@@ -173,3 +177,18 @@ resilience4j:
         baseConfig: default
       defaultCircuitBreaker:
         baseConfig: default
+# Configuración de endpoints de Actuator para health checks
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true
+  health:
+    circuitbreakers:
+      enabled: true
