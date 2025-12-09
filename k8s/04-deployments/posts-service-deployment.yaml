@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: posts-service
+  labels:
+    app: posts-service
+    tier: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: posts-service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: posts-service
+        tier: backend
+    spec:
+      containers:
+      - name: posts-service
+        image: us-central1-docker.pkg.dev/retofit-k8s-prod/retofit-images/posts-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8005
+          name: http
+          protocol: TCP
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: database-secrets
+              key: POSTS_DB_URL
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: jwt-secret
+              key: SECRET_KEY
+        - name: ALGORITHM
+          valueFrom:
+            secretKeyRef:
+              name: jwt-secret
+              key: ALGORITHM
+        - name: CLOUDINARY_CLOUD_NAME
+          valueFrom:
+            secretKeyRef:
+              name: cloudinary-secret
+              key: CLOUDINARY_CLOUD_NAME
+        - name: CLOUDINARY_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: cloudinary-secret
+              key: CLOUDINARY_API_KEY
+        - name: CLOUDINARY_API_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: cloudinary-secret
+              key: CLOUDINARY_API_SECRET
+        - name: PORT
+          value: "8005"
+        - name: NODE_ENV
+          value: "development"
+        - name: API_BASE_URL
+          value: "http://localhost:8005"
+        - name: MAX_FILE_SIZE
+          value: "5242880"
+        - name: UPLOAD_DIR
+          value: "./uploads"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8005
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8005
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
