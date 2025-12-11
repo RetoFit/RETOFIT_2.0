@@ -640,7 +640,7 @@ Luego, se escribe la constraseña que desea.
 Después, importa un dashboard. Para *Prometheus* el **id** es ***18030***. A continuación, se tiene que importar un data source colocando como url: *http://prometheus.default.svc.cluster.local:9090*.
 
 #### Resultado obtenido
-<div align="center"><img width="80%" alt="image" src="diagramas/resultados_test_rate_limit.png" /></div>
+<div align="center"><img width="80%" alt="resultado del test de rate limit" src="diagramas/resultados_test_rate_limit.png" /></div>
 
 **Beneficios Demostrados**
 1. Protección Anti-DoS: Evita que un atacante inunde el sistema con solicitudes.
@@ -728,6 +728,9 @@ Cuando un servicio falla y el Circuit Breaker se activa (estado OPEN), el sistem
 3. **Auto-recuperación:** El circuito se cierra automáticamente cuando el servicio se recupera
 4. **Prevención de cascada:** Evita que fallos en un servicio tumben todo el sistema
 5. **Experiencia de usuario:** Mensajes claros en lugar de timeouts largos
+
+### Prueba de estrés
+<div align="center"><img width="80%" alt="resultado del test de rate limit" src="diagramas/prueba_estres.png" /></div>
 
 ---
 
