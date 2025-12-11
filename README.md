@@ -650,8 +650,6 @@ Después, importa un dashboard. Para *Prometheus* el **id** es ***18030***. A co
 3. Seguridad en el Borde: El tráfico malicioso es detenido en Nginx, antes de consumir recursos de procesamiento del API Gateway o la Base de Datos.
 
 
-## 🧪 Pruebas de Patrones de Escalabilidad
-
 ### Circuit Breaker Pattern
 
 El sistema implementa el patrón **Circuit Breaker** usando Spring Cloud Gateway y Resilience4j para mejorar la resiliencia y prevenir cascadas de fallos cuando un servicio está caído.
@@ -731,6 +729,450 @@ Cuando un servicio falla y el Circuit Breaker se activa (estado OPEN), el sistem
 
 ### Prueba de estrés
 <div align="center"><img width="80%" alt="resultado del test de rate limit" src="diagramas/prueba_estres.png" /></div>
+
+
+## Pruebas de Patrones de Escalabilidad
+
+### Escenario 1: Replication Pattern (Patrón de Replicación)
+
+El sistema implementa el Replication Pattern para garantizar alta disponibilidad y balanceo de carga. Múltiples réplicas de los servicios críticos se ejecutan simultáneamente para distribuir la carga y proporcionar tolerancia a fallos.
+
+#### Configuración de Réplicas
+
+| Servicio | Réplicas |
+|----------|----------|
+| auth-service | 2 |
+| users-service | 2 |
+| activities-service | 2 |
+| gamification-service | 1 |
+| posts-service | 1 |
+| admin-service | 1 |
+| api-gateway | 1 |
+| frontend | 1 |
+| landing-page | 1 |
+| nginx-proxy | 1 |
+
+#### Implementación en Kubernetes
+
+Configuración para servicios con 2 réplicas:
+```yaml
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+```
+
+#### Comandos de Verificación
+
+```bash
+# Ver réplicas activas
+kubectl get pods -l app=auth-service -o wide
+
+# Escalar manualmente
+kubectl scale deployment auth-service --replicas=3
+
+# Ver distribución de carga
+kubectl logs -l app=auth-service --tail=100
+```
+
+#### Script de Prueba
+
+```bash
+# Test de balanceo de carga
+./k8s/test-load-balancing.sh
+```
+
+---
+
+### Escenario 2: Service Discovery Pattern (Descubrimiento de Servicios)
+
+El sistema implementa Service Discovery nativo de Kubernetes mediante DNS interno (CoreDNS). Cada servicio se descubre automáticamente por su nombre DNS.
+
+#### Implementación
+
+Servicios ClusterIP:
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+spec:
+  type: ClusterIP
+  selector:
+    app: auth-service
+  ports:
+  - port: 8001
+    targetPort: 8001
+```
+
+Resolución DNS:
+- Nombre corto: `http://auth-service:8001`
+- FQDN completo: `http://auth-service.default.svc.cluster.local:8001`
+
+#### Comunicación Entre Servicios
+
+Ejemplos implementados:
+
+1. API Gateway a Microservicios (HTTP)
+```yaml
+- id: auth-route
+  uri: http://auth-service:8001
+  
+- id: users-route
+  uri: http://users-service:8004
+```
+
+2. Activities Service a Users Service (gRPC)
+```go
+conn, err := grpc.Dial("users-service:50051", grpc.WithInsecure())
+```
+
+#### NetworkPolicy para DNS
+
+```yaml
+# k8s/05-network-policies/allow-dns.yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns-access
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+    - podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+```
+
+#### Verificación
+
+```bash
+# Verificar resolución DNS desde un pod
+kubectl run test --image=busybox --rm -it --restart=Never -- nslookup auth-service
+```
+
+---
+
+### Escenario 3: Cluster Pattern (Patrón de Cluster)
+
+El sistema se despliega en un Kubernetes Cluster que gestiona la orquestación, distribución y alta disponibilidad de todos los componentes.
+
+#### Arquitectura del Cluster
+
+```
+Kubernetes Control Plane
+   API Server | Scheduler | Controller Manager
+
+Worker Node(s) - Minikube
+   Pods: auth-service, users-service, activities-service
+   Pods: gamification-service, posts-service, admin-service
+   Pods: api-gateway, nginx-proxy, frontend, landing-page
+```
+
+#### Componentes del Cluster
+
+Control Plane:
+- API Server: Punto de entrada para todas las operaciones
+- Scheduler: Asigna pods a nodos
+- Controller Manager: Mantiene el estado deseado
+- etcd: Base de datos del estado del cluster
+
+Worker Nodes:
+- Kubelet: Agente en cada nodo
+- kube-proxy: Maneja reglas de red
+- Container Runtime: Docker/containerd
+
+#### Servicios Desplegados
+
+```bash
+# Ver todos los pods y su ubicación
+kubectl get pods -o wide
+```
+
+#### Configuración del Cluster Local
+
+Minikube:
+```bash
+# Iniciar cluster
+minikube start --memory=5000 --cpus=3
+
+# Cargar imágenes locales
+minikube image load retofit/auth-service:latest
+```
+
+#### Health Checks Implementados
+
+Cada servicio tiene configurados health checks:
+
+```yaml
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 8001
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 8001
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  failureThreshold: 3
+```
+
+#### Comandos de Gestión
+
+```bash
+# Ver información del cluster
+kubectl cluster-info
+
+# Ver nodos
+kubectl get nodes
+
+# Ver uso de recursos
+kubectl top nodes
+kubectl top pods
+
+# Ver todos los recursos
+kubectl get all
+```
+
+---
+
+### Escenario 4: Rolling Update Pattern (Actualización Rotativa)
+
+El sistema implementa el **Rolling Update Pattern** para realizar actualizaciones de servicios sin tiempo de inactividad (zero downtime). Kubernetes gestiona automáticamente el proceso de actualización gradual.
+
+#### Estrategia de Actualización Configurada
+
+**Para servicios con 2 réplicas:**
+```yaml
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1    # Máximo 1 pod puede estar inactivo
+      maxSurge: 1          # Máximo 1 pod extra durante actualización
+```
+
+**Significado:**
+- Durante la actualización, puede haber hasta 3 pods (2 originales + 1 nuevo)
+- Siempre hay al menos 1 pod funcionando (2 - maxUnavailable)
+- Los pods se actualizan uno por uno
+
+**Para servicios con 1 réplica:**
+```yaml
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0    # No puede haber pods inactivos
+      maxSurge: 1          # Crea el nuevo antes de eliminar el viejo
+```
+
+**Significado:**
+- Primero crea el nuevo pod
+- Espera a que esté Ready (health checks)
+- Luego elimina el pod viejo
+- Garantiza zero downtime incluso con 1 sola réplica
+
+#### Proceso de Rolling Update
+
+**Ejemplo: Actualizar auth-service de v1 a v2**
+
+```
+Estado Inicial:
+  auth-service-v1-pod1 [Running]
+  auth-service-v1-pod2 [Running]
+
+Paso 1 - Crear nuevo pod:
+  auth-service-v1-pod1 [Running]
+  auth-service-v1-pod2 [Running]
+  auth-service-v2-pod1 [Creating]
+
+Paso 2 - Esperar health checks:
+  auth-service-v1-pod1 [Running]
+  auth-service-v1-pod2 [Running]
+  auth-service-v2-pod1 [Ready] (liveness + readiness OK)
+
+Paso 3 - Eliminar pod viejo:
+  auth-service-v1-pod1 [Terminating]
+  auth-service-v1-pod2 [Running]
+  auth-service-v2-pod1 [Running]
+
+Paso 4 - Crear segundo pod nuevo:
+  auth-service-v1-pod2 [Running]
+  auth-service-v2-pod1 [Running]
+  auth-service-v2-pod2 [Creating]
+
+Paso 5 - Completado:
+  auth-service-v2-pod1 [Running]
+  auth-service-v2-pod2 [Running]
+```
+
+**En ningún momento hay menos de 2 pods activos**
+
+#### Comandos para Rolling Updates
+
+**1. Actualizar imagen de servicio:**
+```bash
+# Construir nueva versión
+docker build -t retofit/auth-service:v2 ./services/auth-service
+
+# Cargar en minikube
+minikube image load retofit/auth-service:v2
+
+# Actualizar deployment (inicia rolling update automático)
+kubectl set image deployment/auth-service auth-service=retofit/auth-service:v2
+```
+
+**2. Monitorear el rollout:**
+```bash
+# Ver progreso en tiempo real
+kubectl rollout status deployment/auth-service
+
+# Salida:
+# Waiting for deployment "auth-service" rollout to finish: 1 out of 2 new replicas have been updated...
+# Waiting for deployment "auth-service" rollout to finish: 1 old replicas are pending termination...
+# deployment "auth-service" successfully rolled out
+```
+
+**3. Ver historial de versiones:**
+```bash
+# Ver todas las revisiones
+kubectl rollout history deployment/auth-service
+
+# Ver detalles de una revisión específica
+kubectl rollout history deployment/auth-service --revision=2
+```
+
+**4. Rollback si algo sale mal:**
+```bash
+# Deshacer última actualización
+kubectl rollout undo deployment/auth-service
+
+# Volver a una revisión específica
+kubectl rollout undo deployment/auth-service --to-revision=1
+
+# Pausar un rollout en progreso
+kubectl rollout pause deployment/auth-service
+
+# Resumir rollout pausado
+kubectl rollout resume deployment/auth-service
+```
+
+**5. Reiniciar pods sin cambiar imagen:**
+```bash
+# Rolling restart (útil para aplicar cambios de ConfigMaps/Secrets)
+kubectl rollout restart deployment/auth-service
+```
+
+#### Integración con Health Checks
+
+El Rolling Update respeta los health checks configurados:
+
+```yaml
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 8001
+  initialDelaySeconds: 30    # Espera 30s antes de verificar
+  periodSeconds: 10          # Verifica cada 10s
+  failureThreshold: 3        # Falla tras 3 intentos fallidos
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 8001
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  failureThreshold: 3
+```
+
+**Comportamiento:**
+1. Kubernetes crea el nuevo pod
+2. Espera `initialDelaySeconds` 
+3. Ejecuta readiness probe cada `periodSeconds`
+4. Solo después de 3 éxitos consecutivos marca el pod como Ready
+5. Solo entonces elimina pods viejos
+6. Si el nuevo pod falla liveness/readiness, el rollout se detiene automáticamente
+
+#### Beneficios del Rolling Update Pattern
+
+- **Zero Downtime:** Servicio siempre disponible durante actualizaciones
+- **Rollback Automático:** Si health checks fallan, Kubernetes no continúa
+- **Control Gradual:** Actualización progresiva, no todo a la vez
+- **Seguridad:** Validación con health checks antes de eliminar versión anterior
+- **Historial:** Posibilidad de volver a cualquier versión anterior
+- **Configurabilidad:** Control fino sobre velocidad de actualización
+
+#### Ejemplo Real de Actualización
+
+```bash
+# Supongamos que auth-service tiene un bug en producción
+
+# 1. Desarrollador corrige el código y hace commit
+git commit -am "Fix authentication bug"
+
+# 2. Construir nueva imagen con tag específico
+docker build -t retofit/auth-service:v1.2.1 ./services/auth-service
+
+# 3. Cargar en cluster
+minikube image load retofit/auth-service:v1.2.1
+
+# 4. Actualizar deployment
+kubectl set image deployment/auth-service auth-service=retofit/auth-service:v1.2.1
+
+# 5. Monitorear en tiempo real
+kubectl get pods -l app=auth-service -w
+
+# Verás:
+# auth-service-old-abc  1/1  Running     -> Terminating
+# auth-service-new-xyz  0/1  Creating    -> Running -> Ready
+# auth-service-old-def  1/1  Running     -> Terminating
+# auth-service-new-uvw  0/1  Creating    -> Running -> Ready
+
+# 6. Verificar estado final
+kubectl rollout status deployment/auth-service
+# deployment "auth-service" successfully rolled out
+
+# 7. Si algo sale mal, rollback inmediato
+kubectl rollout undo deployment/auth-service
+```
+
+#### Configuración para Todos los Servicios
+
+Servicios con Rolling Update configurado:
+- auth-service (2 réplicas)
+- users-service (2 réplicas)
+- activities-service (2 réplicas)
+- gamification-service (1 réplica)
+- posts-service (1 réplica)
+- admin-service (1 réplica)
+- api-gateway (1 réplica)
+- frontend (1 réplica)
+- landing-page (1 réplica)
+- nginx-proxy (1 réplica)
+
+**Todos los deployments** tienen la estrategia `type: RollingUpdate` explícitamente configurada en sus archivos YAML (`k8s/04-deployments/`).
+
 
 ---
 
@@ -1273,3 +1715,4 @@ NEXT_PUBLIC_FRONTEND_URL=https://localhost
 
 **Frontend Principal**: Configurado en `docker-compose.yaml`
 ```
+
